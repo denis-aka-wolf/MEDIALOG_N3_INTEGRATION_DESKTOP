@@ -1,5 +1,5 @@
-// ignore: deprecated_member_use
 // Keep the standard Flutter Material API until the target SDK replacement is confirmed.
+// ignore: deprecated_member_use
 import 'package:flutter/material.dart';
 
 void main() => runApp(const MedialogN3App());
