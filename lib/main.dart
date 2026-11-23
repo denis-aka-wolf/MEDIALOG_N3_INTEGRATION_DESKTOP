@@ -1149,7 +1149,7 @@ class _IemkPageState extends State<IemkPage> {
       OutlinedButton.icon(onPressed: () => setState(() { selected = null; selectedDocumentId = null; }),
         icon: const Icon(Icons.arrow_back, size: 16), label: const Text('К списку пациентов')),
       const SizedBox(height: 16),
-      _PageHeading(title: p.name, subtitle: 'Индивидуальная электронная медицинская карта · ' + p.emk,
+      _PageHeading(title: p.name, subtitle: 'Индивидуальная электронная медицинская карта · ${p.emk}',
         trailing: Wrap(spacing: 8, children: [const _DemoBadge(), OutlinedButton.icon(
           onPressed: _refreshDemo, icon: const Icon(Icons.refresh, size: 15), label: const Text('Обновить'))])),
       const SizedBox(height: 16),
@@ -1163,7 +1163,7 @@ class _IemkPageState extends State<IemkPage> {
       const SizedBox(height: 14),
       Card(child: Padding(padding: const EdgeInsets.all(8), child: Wrap(spacing: 6, runSpacing: 6,
         children: [for (final t in tabs) ChoiceChip(label: Text(t, style: const TextStyle(fontSize: 11)),
-          selected: section == t, onSelected: (_) => setState(() => section = t)]))),
+          selected: section == t, onSelected: (_) => setState(() => section = t)])))),
       const SizedBox(height: 14),
       if (section == 'Общие сведения') _generalInfo(p)
       else if (section == 'Медицинская история') _historyView()
@@ -1236,7 +1236,7 @@ class _IemkPageState extends State<IemkPage> {
           leading: const CircleAvatar(backgroundColor: Color(0xFFEAF2F8),
             child: Icon(Icons.description_outlined, color: Color(0xFF47799E), size: 18)),
           title: Text(e.$2, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
-          subtitle: Text(e.$1 + ' · ' + e.$3 + ' · ' + e.$6, style: const TextStyle(fontSize: 10)),
+          subtitle: Text('${e.$1} · ${e.$3} · ${e.$6}', style: const TextStyle(fontSize: 10)),
           trailing: _StatusBadge(label: e.$4, type: e.$5),
           onTap: () => setState(() => selectedDocumentId = e.$6),
         ),
