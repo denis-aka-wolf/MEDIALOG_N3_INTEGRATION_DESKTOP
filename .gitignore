@@ -19,3 +19,6 @@ windows/
 
 # Flutter project metadata
 .metadata
+
+# Release output
+out/
