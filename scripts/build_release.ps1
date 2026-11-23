@@ -17,14 +17,14 @@ Set-Location $ProjectRoot
 
 $PubspecPath = Join-Path $ProjectRoot "pubspec.yaml"
 if (-not (Test-Path $PubspecPath)) {
-    Stop-Build "pubspec.yaml not found. Run this script from a valid Flutter project."
+    Stop-Build "Файл pubspec.yaml не найден. Запустите сценарий из каталога проекта Flutter."
 }
 
 if (-not $Version) {
     $Pubspec = Get-Content $PubspecPath -Raw
     $VersionMatch = [regex]::Match($Pubspec, '(?m)^version:\s*["'']?([^''"\r\n#]+)')
     if (-not $VersionMatch.Success) {
-        Stop-Build "Could not read version from pubspec.yaml. Pass -Version explicitly."
+        Stop-Build "Не удалось прочитать версию из pubspec.yaml. Укажите её явно параметром -Version."
     }
     $Version = $VersionMatch.Groups[1].Value.Trim()
 }
@@ -37,43 +37,43 @@ $ReleasePath = Join-Path $OutputRoot $ReleaseName
 $BuildPath = Join-Path $ProjectRoot "build\windows\x64\runner\Release"
 
 Write-Host ""
-Write-Host "MEDIALOG N3 DESKTOP - WINDOWS RELEASE" -ForegroundColor Cyan
-Write-Host "Version : $Version"
-Write-Host "Date    : $Date"
-Write-Host "Output  : $ReleasePath"
+Write-Host "MEDIALOG N3 DESKTOP - СБОРКА ДЛЯ WINDOWS" -ForegroundColor Cyan
+Write-Host "Версия  : $Version"
+Write-Host "Дата    : $Date"
+Write-Host "Каталог : $ReleasePath"
 Write-Host ""
 
 if (-not (Get-Command flutter -ErrorAction SilentlyContinue)) {
-    Stop-Build "Flutter was not found in PATH. Install Flutter and reopen PowerShell."
+    Stop-Build "Flutter не найден в PATH. Установите Flutter и перезапустите PowerShell."
 }
 
 if (-not (Test-Path (Join-Path $ProjectRoot "windows"))) {
-    Write-Host "Windows desktop runner not found. Generating Windows platform files..." -ForegroundColor Yellow
+    Write-Host "Среда запуска Windows не найдена. Создаём файлы платформы Windows..." -ForegroundColor Yellow
     flutter create --platforms=windows .
-    if ($LASTEXITCODE -ne 0) { Stop-Build "flutter create failed." }
+    if ($LASTEXITCODE -ne 0) { Stop-Build "Не удалось создать файлы платформы Windows." }
 }
 
-Write-Host "[1/4] Resolving dependencies..." -ForegroundColor Cyan
+Write-Host "[1/4] Загрузка зависимостей..." -ForegroundColor Cyan
 flutter pub get
-if ($LASTEXITCODE -ne 0) { Stop-Build "flutter pub get failed." }
+if ($LASTEXITCODE -ne 0) { Stop-Build "Не удалось загрузить зависимости Flutter." }
 
 if (-not $SkipAnalyze) {
-    Write-Host "[2/4] Running static analysis..." -ForegroundColor Cyan
+    Write-Host "[2/4] Статический анализ кода..." -ForegroundColor Cyan
     flutter analyze
-    if ($LASTEXITCODE -ne 0) { Stop-Build "flutter analyze failed. Fix analyzer errors or rerun with -SkipAnalyze." }
+    if ($LASTEXITCODE -ne 0) { Stop-Build "Статический анализ завершился с ошибками. Исправьте их или повторите запуск с параметром -SkipAnalyze." }
 } else {
-    Write-Host "[2/4] Static analysis skipped." -ForegroundColor Yellow
+    Write-Host "[2/4] Статический анализ пропущен." -ForegroundColor Yellow
 }
 
-Write-Host "[3/4] Building Windows release..." -ForegroundColor Cyan
+Write-Host "[3/4] Сборка приложения для Windows..." -ForegroundColor Cyan
 flutter build windows --release
-if ($LASTEXITCODE -ne 0) { Stop-Build "Flutter Windows release build failed." }
+if ($LASTEXITCODE -ne 0) { Stop-Build "Не удалось собрать приложение для Windows." }
 
 if (-not (Test-Path $BuildPath)) {
-    Stop-Build "Build output not found: $BuildPath"
+    Stop-Build "Каталог с результатами сборки не найден: $BuildPath"
 }
 
-Write-Host "[4/4] Copying release files..." -ForegroundColor Cyan
+Write-Host "[4/4] Копирование файлов приложения..." -ForegroundColor Cyan
 New-Item -ItemType Directory -Path $OutputRoot -Force | Out-Null
 if (Test-Path $ReleasePath) {
     Remove-Item $ReleasePath -Recurse -Force
@@ -84,16 +84,16 @@ Copy-Item (Join-Path $BuildPath "*") $ReleasePath -Recurse -Force
 $BuildInfo = @"
 MEDIALOG N3 INTEGRATION DESKTOP
 Version: $Version
-Build date: $Date
-Target: Windows x64
-Configuration: Release
+Дата сборки: $Date
+Целевая платформа: Windows x64
+Конфигурация: выпуск
 
-This package is a UI prototype. It contains no production integration with Medialog SQL,
-N3.Health, FRMO/FRMR, CryptoPro, or live medical data sources.
+Этот пакет является визуальным прототипом. В нём нет промышленной интеграции с Медиалог SQL,
+N3.Health, ФРМО/ФРМР, CryptoPro и реальными источниками медицинских данных.
 "@
 Set-Content -Path (Join-Path $ReleasePath "BUILD_INFO.txt") -Value $BuildInfo -Encoding UTF8
 
 Write-Host ""
-Write-Host "Release completed successfully." -ForegroundColor Green
-Write-Host "Folder: $ReleasePath" -ForegroundColor Green
-Write-Host "Executable: $ReleasePath\medialog_n3_integration_desktop.exe"
+Write-Host "Сборка успешно завершена." -ForegroundColor Green
+Write-Host "Каталог: $ReleasePath" -ForegroundColor Green
+Write-Host "Исполняемый файл: $ReleasePath\medialog_n3_integration_desktop.exe"
