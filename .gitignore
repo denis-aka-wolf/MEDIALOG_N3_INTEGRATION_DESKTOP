@@ -15,3 +15,7 @@ build/
 
 # Windows build artifacts
 windows/flutter/ephemeral/
+windows/
+
+# Flutter project metadata
+.metadata
