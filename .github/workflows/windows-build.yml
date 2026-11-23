@@ -1,4 +1,4 @@
-name: Windows Flutter build
+name: Сборка приложения для Windows
 
 on:
   push:
@@ -18,14 +18,14 @@ jobs:
           channel: stable
           cache: true
 
-      - name: Enable Windows desktop
+      - name: Включение поддержки Windows
         run: flutter create --platforms=windows .
 
-      - name: Resolve dependencies
+      - name: Загрузка зависимостей
         run: flutter pub get
 
-      - name: Analyze
+      - name: Статический анализ кода
         run: flutter analyze
 
-      - name: Build Windows
+      - name: Сборка приложения для Windows
         run: flutter build windows --release
