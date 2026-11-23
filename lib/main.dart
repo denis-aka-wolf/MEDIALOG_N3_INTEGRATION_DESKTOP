@@ -1,3 +1,5 @@
+// ignore: deprecated_member_use
+// Keep the standard Flutter Material API until the target SDK replacement is confirmed.
 import 'package:flutter/material.dart';
 
 void main() => runApp(const MedialogN3App());
@@ -16,7 +18,6 @@ class MedialogN3App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const navy = Color(0xFF142B45);
     const blue = Color(0xFF2878B8);
     return MaterialApp(
       title: 'Medialog N3 Desktop',
@@ -274,23 +275,23 @@ class _TopBar extends StatelessWidget {
         color: Colors.white,
         border: Border(bottom: BorderSide(color: Color(0xFFE8EDF2))),
       ),
-      child: Row(
+      child: const Row(
         children: [
-          const Text('Интеграция с ЕГИСЗ', style: TextStyle(color: Color(0xFF617286), fontSize: 12)),
-          const Spacer(),
-          const Icon(Icons.cloud_done_outlined, size: 17, color: Color(0xFF269B77)),
-          const SizedBox(width: 7),
-          const Text('Локальный режим', style: TextStyle(fontSize: 11, color: Color(0xFF526477))),
-          const SizedBox(width: 20),
-          const _DemoBadge(),
-          const SizedBox(width: 18),
-          const CircleAvatar(
+          Text('Интеграция с ЕГИСЗ', style: TextStyle(color: Color(0xFF617286), fontSize: 12)),
+          Spacer(),
+          Icon(Icons.cloud_done_outlined, size: 17, color: Color(0xFF269B77)),
+          SizedBox(width: 7),
+          Text('Локальный режим', style: TextStyle(fontSize: 11, color: Color(0xFF526477))),
+          SizedBox(width: 20),
+          _DemoBadge(),
+          SizedBox(width: 18),
+          CircleAvatar(
             radius: 16,
             backgroundColor: Color(0xFFE7EFF7),
             child: Icon(Icons.person_outline, size: 18, color: Color(0xFF315879)),
           ),
-          const SizedBox(width: 9),
-          const Text('Оператор', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
+          SizedBox(width: 9),
+          Text('Оператор', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -760,7 +761,7 @@ class _QueuePageState extends State<QueuePage> {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const _PageHeading(title: 'Очередь СЭМД', subtitle: 'Подготовка, проверка и полуавтоматическая отправка документов'),
         const SizedBox(height: 20),
-        Wrap(spacing: 10, runSpacing: 10, children: const [
+        const Wrap(spacing: 10, runSpacing: 10, children: [
           _MiniCount(label: 'Всего в очереди', value: '142'),
           _MiniCount(label: 'Готовы', value: '87'),
           _MiniCount(label: 'Ошибки', value: '19'),
@@ -942,7 +943,7 @@ class _ArchivePageState extends State<ArchivePage> {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const _PageHeading(title: 'Архив документов', subtitle: 'Список сформированных СЭМД и переход к карточке каждого документа'),
         const SizedBox(height: 20),
-        Wrap(spacing: 10, runSpacing: 10, children: const [
+        const Wrap(spacing: 10, runSpacing: 10, children: [
           _MiniCount(label: 'Документов в архиве', value: '1 106'),
           _MiniCount(label: 'Зарегистрировано', value: '1 042'),
           _MiniCount(label: 'Требуют внимания', value: '64'),
@@ -1071,7 +1072,7 @@ class AuditPage extends StatelessWidget {
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         const _PageHeading(title: 'Журнал действий', subtitle: 'Аудит операций пользователей и системных процессов'),
         const SizedBox(height: 20),
-        Wrap(spacing: 10, runSpacing: 10, children: const [
+        const Wrap(spacing: 10, runSpacing: 10, children: [
           _MiniCount(label: 'Событий сегодня', value: '284'),
           _MiniCount(label: 'Успешно', value: '261'),
           _MiniCount(label: 'Ошибки', value: '12'),
