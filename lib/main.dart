@@ -1069,6 +1069,10 @@ class _IemkPageState extends State<IemkPage> {
   String query = '';
   _IemkPatient? selected;
   String section = 'Общие сведения';
+  String typeFilter = 'Все типы';
+  String periodFilter = 'За всё время';
+  String? selectedDocumentId;
+  bool refreshed = false;
 
   static const patients = [
     _IemkPatient('PAT-00018452', 'Алексеева Мария Викторовна', '14.06.1987', 'Женский', '4520 1845 2291 0048', 'ЭМК-00018452', 'г. Москва, ул. Новая, д. 18', '+7 (900) 123-45-67', 18, 1),
@@ -1087,8 +1091,10 @@ class _IemkPageState extends State<IemkPage> {
   ];
 
   @override
-  Widget build(BuildContext context) =>
-      selected == null ? _listView() : _patientView(selected!);
+  Widget build(BuildContext context) {
+    if (selectedDocumentId != null) return _documentDetails();
+    return selected == null ? _listView() : _patientView(selected!);
+  }
 
   Widget _listView() {
     final filtered = patients.where((p) =>
@@ -1138,13 +1144,14 @@ class _IemkPageState extends State<IemkPage> {
   }
 
   Widget _patientView(_IemkPatient p) {
-    const tabs = ['Общие сведения', 'Медицинская история', 'Документы СЭМД', 'Направления'];
+    const tabs = ['Общие сведения', 'Медицинская история', 'Документы СЭМД', 'Направления', 'Сопоставление'];
     return _PagePadding(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      OutlinedButton.icon(onPressed: () => setState(() => selected = null),
+      OutlinedButton.icon(onPressed: () => setState(() { selected = null; selectedDocumentId = null; }),
         icon: const Icon(Icons.arrow_back, size: 16), label: const Text('К списку пациентов')),
       const SizedBox(height: 16),
       _PageHeading(title: p.name, subtitle: 'Индивидуальная электронная медицинская карта · ' + p.emk,
-        trailing: const _DemoBadge()),
+        trailing: Wrap(spacing: 8, children: [const _DemoBadge(), OutlinedButton.icon(
+          onPressed: _refreshDemo, icon: const Icon(Icons.refresh, size: 15), label: const Text('Обновить'))])),
       const SizedBox(height: 16),
       Card(child: Padding(padding: const EdgeInsets.all(18), child: Wrap(spacing: 24, runSpacing: 14, children: [
         _PatientSummary(label: 'ID пациента', value: p.id),
@@ -1161,10 +1168,12 @@ class _IemkPageState extends State<IemkPage> {
       if (section == 'Общие сведения') _generalInfo(p)
       else if (section == 'Медицинская история') _historyView()
       else if (section == 'Документы СЭМД') _historyView(onlyDocuments: true)
-      else _referralsView(),
+      else if (section == 'Направления') _referralsView()
+      else _matchingView(p),
       const SizedBox(height: 12),
-      const Text('Карточка ИЭМК демонстрационная. Данные пациента, состав карты и статусы не получены из ЕГИСЗ.',
-        style: TextStyle(fontSize: 10, color: Color(0xFF8996A4))),
+      Text(refreshed ? 'Демо-обновление выполнено. Подключение к ЕГИСЗ не выполнялось.' :
+        'Карточка ИЭМК демонстрационная. Данные не получены из ЕГИСЗ.',
+        style: const TextStyle(fontSize: 10, color: Color(0xFF8996A4))),
     ]));
   }
 
@@ -1189,13 +1198,39 @@ class _IemkPageState extends State<IemkPage> {
       const _CheckChip(label: 'Синхронизация с ЕГИСЗ', detail: 'Не выполнялась', ok: false),
     ])));
 
+  void _refreshDemo() {
+    setState(() => refreshed = true);
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+      content: Text('Демо-обновление завершено. Реальные источники не подключены.')));
+  }
+
   Widget _historyView({bool onlyDocuments = false}) {
-    final items = onlyDocuments ? history.where((e) => e.$2 != 'Направление').toList() : history;
+    final items = history.where((e) {
+      final referral = e.$2 == 'Направление';
+      final typeOk = typeFilter == 'Все типы' ||
+        (typeFilter == 'Направления' ? referral : !referral);
+      final periodOk = periodFilter == 'За всё время' ||
+        (periodFilter == 'Ноябрь 2026' ? e.$1.contains('.11.2026') : e.$1.contains('.10.2026'));
+      return typeOk && periodOk && (!onlyDocuments || !referral);
+    }).toList();
     return Card(child: Column(children: [
       Padding(padding: const EdgeInsets.all(18), child: _CardTitle(
         title: onlyDocuments ? 'Документы СЭМД' : 'Медицинская история',
         subtitle: 'Хронология медицинских событий и результатов обработки')),
       const Divider(height: 1),
+      Padding(padding: const EdgeInsets.fromLTRB(16, 12, 16, 4), child: Wrap(spacing: 10, runSpacing: 8, children: [
+        SizedBox(width: 180, child: DropdownButtonFormField<String>(value: periodFilter,
+          decoration: const InputDecoration(labelText: 'Период'),
+          items: const ['За всё время', 'Ноябрь 2026', 'Октябрь 2026'].map((v) => DropdownMenuItem(value: v, child: Text(v))).toList(),
+          onChanged: (v) => setState(() => periodFilter = v ?? 'За всё время'))),
+        SizedBox(width: 190, child: DropdownButtonFormField<String>(value: typeFilter,
+          decoration: const InputDecoration(labelText: 'Тип записи'),
+          items: const ['Все типы', 'Протокол', 'Направления'].map((v) => DropdownMenuItem(value: v, child: Text(v))).toList(),
+          onChanged: (v) => setState(() => typeFilter = v ?? 'Все типы'))),
+        TextButton.icon(onPressed: () => setState(() { periodFilter = 'За всё время'; typeFilter = 'Все типы'; }),
+          icon: const Icon(Icons.filter_alt_off, size: 16), label: const Text('Сбросить')),
+      ])),
+      if (items.isEmpty) const Padding(padding: EdgeInsets.all(20), child: Text('По выбранным фильтрам записей нет')),
       for (final e in items)
         ListTile(contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
           leading: const CircleAvatar(backgroundColor: Color(0xFFEAF2F8),
@@ -1203,13 +1238,74 @@ class _IemkPageState extends State<IemkPage> {
           title: Text(e.$2, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
           subtitle: Text(e.$1 + ' · ' + e.$3 + ' · ' + e.$6, style: const TextStyle(fontSize: 10)),
           trailing: _StatusBadge(label: e.$4, type: e.$5),
-          onTap: () => showDialog(context: context, builder: (_) => AlertDialog(
-            title: Text(e.$6), content: Text(e.$2 + '\n' + e.$1 + '\n' + e.$3 +
-              '\n\nКарточка документа доступна в разделе «Архив документов».'),
-            actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Закрыть'))])),
+          onTap: () => setState(() => selectedDocumentId = e.$6),
         ),
     ]));
   }
+
+  Widget _documentDetails() {
+    final e = history.firstWhere((item) => item.$6 == selectedDocumentId);
+    return _PagePadding(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      OutlinedButton.icon(onPressed: () => setState(() => selectedDocumentId = null),
+        icon: const Icon(Icons.arrow_back, size: 16), label: const Text('К медицинской карте')),
+      const SizedBox(height: 16),
+      _PageHeading(title: e.$6, subtitle: 'Карточка документа в составе ИЭМК', trailing: const _DemoBadge()),
+      const SizedBox(height: 14),
+      Card(child: Padding(padding: const EdgeInsets.all(20), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(e.$2, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+        const SizedBox(height: 8),
+        _StatusBadge(label: e.$4, type: e.$5),
+        const Divider(height: 24),
+        _InfoLine(label: 'Дата', value: e.$1),
+        _InfoLine(label: 'Подразделение / специалист', value: e.$3),
+        _InfoLine(label: 'ID локальной записи', value: e.$6),
+        const Divider(height: 24),
+        const _CardTitle(title: 'Содержание документа', subtitle: 'Демонстрационное представление'),
+        const SizedBox(height: 10),
+        const SelectableText('Медицинская запись содержит сведения о проведённом приёме или исследовании. Подробное структурированное содержание будет отображаться после подключения источника данных.',
+          style: TextStyle(fontSize: 12, height: 1.5)),
+        const Divider(height: 24),
+        const _CardTitle(title: 'Состав пакета', subtitle: 'Предполагаемые представления документа'),
+        const ListTile(leading: Icon(Icons.code), title: Text('CDA / XML', style: TextStyle(fontSize: 11)), subtitle: Text('Структурированный документ', style: TextStyle(fontSize: 10))),
+        const ListTile(leading: Icon(Icons.picture_as_pdf_outlined), title: Text('PDF-представление', style: TextStyle(fontSize: 11)), subtitle: Text('Человекочитаемая версия', style: TextStyle(fontSize: 10))),
+        const Text('Оригинальные файлы не загружены. Это демонстрационная карточка, не медицинский документ.',
+          style: TextStyle(fontSize: 10, color: Color(0xFF8996A4))),
+      ]))),
+    ]));
+  }
+
+  Widget _matchingView(_IemkPatient p) => Column(children: [
+    Card(child: Padding(padding: const EdgeInsets.all(20), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const _CardTitle(title: 'Сопоставление записей', subtitle: 'Связь локальных данных Медиалог 7 с документами ИЭМК'),
+      const SizedBox(height: 12),
+      _InfoLine(label: 'Локальная запись', value: 'MED-001258'),
+      _InfoLine(label: 'Идентификатор пациента', value: p.id),
+      _InfoLine(label: 'Номер ИЭМК', value: p.emk),
+      const Divider(height: 24),
+      const _CheckChip(label: 'ФИО и дата рождения', detail: 'Совпадают в демо-записях', ok: true),
+      const SizedBox(height: 8),
+      const _CheckChip(label: 'Локальная запись Медиалог', detail: 'Найдена', ok: true),
+      const SizedBox(height: 8),
+      const _CheckChip(label: 'Внешний ID ЕГИСЗ', detail: 'Требует подтверждения', ok: false),
+    ]))),
+    const SizedBox(height: 12),
+    Card(child: Column(children: [
+      const ListTile(title: Text('Контроль расхождений', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
+        subtitle: Text('Сопоставление идентификаторов и атрибутов пациента', style: TextStyle(fontSize: 10))),
+      const Divider(height: 1),
+      const ListTile(leading: Icon(Icons.check_circle_outline, color: Color(0xFF269B77)),
+        title: Text('ФИО и дата рождения', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+        subtitle: Text('Совпадение демонстрационных данных', style: TextStyle(fontSize: 10))),
+      const ListTile(leading: Icon(Icons.warning_amber_rounded, color: Color(0xFFD99A2B)),
+        title: Text('Внешний идентификатор пациента', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+        subtitle: Text('Нужна проверка соответствия при подключении N3.Health', style: TextStyle(fontSize: 10))),
+    ])),
+    const SizedBox(height: 10),
+    Align(alignment: Alignment.centerRight, child: OutlinedButton.icon(
+      onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text('Демо-проверка выполнена. Реальные источники не подключены.'))),
+      icon: const Icon(Icons.compare_arrows, size: 16), label: const Text('Проверить сопоставление'))),
+  ]);
 
   Widget _referralsView() => Card(child: Padding(padding: const EdgeInsets.all(20),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
