@@ -1,23 +1,24 @@
-# Medialog N3 Integration Desktop
+# MEDIALOG N3 Integration Desktop
 
-Flutter desktop UI prototype for the Medialog 7 → N3.Health СЭМД workflow.
+Настольное приложение на Flutter для подготовки и передачи структурированных электронных медицинских документов (СЭМД) из классической Медиалог 7 в N3.Health.
 
-## Current scope
+## Текущий объём реализации
 
-The current delivery is a visual prototype only. All records, names, identifiers, counters, dates, and statuses are synthetic demo data. No Medialog SQL, N3.Health, ФРМО/ФРМР, CryptoPro, certificate, or real archive integration is implemented.
+На текущем этапе реализован только визуальный прототип. Все записи, ФИО, идентификаторы, счётчики, даты и статусы являются вымышленными демонстрационными данными. Подключение к базе данных Медиалог 7 (MS SQL), N3.Health, ФРМО/ФРМР, CryptoPro, сертификатам и реальному архиву документов не реализовано.
 
-## Screens
+## Разделы приложения
 
-- Dashboard and operational metrics
-- Preflight checks: ФРМО, ФРМР, clinician and organization УКЭП, signing-time validation, CDA validation
-- Semi-automatic СЭМД queue
-- Document archive: XML/CDA, PDF, signatures, original N3 responses, readable PDF reports
-- Audit log
-- Settings
+- Панель управления и основные рабочие показатели.
+- Предварительный контроль: ФРМО, ФРМР, УКЭП врача и медицинской организации, проверка времени подписания и валидация CDA.
+- Очередь СЭМД с полуавтоматической обработкой.
+- Архив документов: XML/CDA, PDF-представления, подписи, исходные ответы N3.Health и отчёты в удобном для чтения виде.
+- Журнал действий пользователей и системных процессов.
+- Настройки будущих интеграционных компонентов.
+- Реестр пациентов и демонстрационный просмотр индивидуальной электронной медицинской карты (ИЭМК).
 
-## Run on Windows
+## Запуск в Windows
 
-Install Flutter stable and enable Windows desktop support. From the repository root run:
+Установите стабильную версию Flutter и включите поддержку настольных приложений Windows. В корневом каталоге репозитория выполните:
 
 ```powershell
 flutter doctor
@@ -26,35 +27,35 @@ flutter pub get
 flutter run -d windows
 ```
 
-## Build a versioned Windows release
+## Сборка версии для Windows
 
-Run the PowerShell script from the repository root (or pass its path from another directory):
+Запустите сценарий PowerShell из корневого каталога репозитория (либо укажите путь к нему из другого каталога):
 
 ```powershell
 .\scripts\build_release.ps1
 ```
 
-The script resolves the version from `pubspec.yaml`, builds `windows --release`, and copies the complete Windows runner output into:
+Сценарий получает номер версии из файла `pubspec.yaml`, собирает приложение в конфигурации `windows --release` и копирует полный результат сборки в каталог:
 
 ```text
-out/<version>_<yyyy-MM-dd>/
+out/<версия>_<гггг-ММ-дд>/
 ```
 
-For example: `out/0.1.0+1_2026-11-23/`. The folder contains the executable, required DLLs/data files, and `BUILD_INFO.txt`.
+Например: `out/0.1.0+1_2026-11-23/`. В каталоге находятся исполняемый файл, необходимые библиотеки DLL, файлы данных и файл `BUILD_INFO.txt`.
 
-Optional parameters:
+Необязательные параметры:
 
 ```powershell
 .\scripts\build_release.ps1 -Version 0.2.0 -Date 2026-12-01
 .\scripts\build_release.ps1 -SkipAnalyze
 ```
 
-Existing output for the same version and date is replaced. The script does not create an installer or ZIP archive; it produces a ready-to-run release folder.
+Если каталог с указанными версией и датой уже существует, он будет заменён. Сценарий не создаёт установщик или ZIP-архив, а формирует готовый каталог приложения для запуска.
 
-## Architecture notes
+## Описание архитектуры
 
-See [docs/PROTOTYPE_SCOPE.md](docs/PROTOTYPE_SCOPE.md) for the agreed scope, non-goals, and planned integration boundaries.
+Согласованный объём прототипа, ограничения и планируемые границы интеграционных компонентов описаны в документе [docs/PROTOTYPE_SCOPE.md](docs/PROTOTYPE_SCOPE.md).
 
-## Safety
+## Безопасность
 
-This prototype is not for clinical use and must not be connected to production systems. Production work requires approved N3.Health contracts, security review, and validated medical-document templates.
+Прототип не предназначен для клинического применения и не должен подключаться к рабочим информационным системам. Для промышленной реализации необходимы утверждённые спецификации интеграции N3.Health, проверка информационной безопасности и валидированные шаблоны медицинских документов.
