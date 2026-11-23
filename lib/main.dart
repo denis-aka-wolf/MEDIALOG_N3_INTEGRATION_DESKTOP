@@ -896,46 +896,153 @@ class _TableHeader extends StatelessWidget {
   }
 }
 
-class ArchivePage extends StatelessWidget {
+class ArchivePage extends StatefulWidget {
   const ArchivePage({super.key});
+  @override
+  State<ArchivePage> createState() => _ArchivePageState();
+}
+
+class _ArchivePageState extends State<ArchivePage> {
+  String query = '';
+  _Doc? selectedDocument;
+
+  static const documents = [
+    _Doc('MED-001258', 'Протокол консультации', 'Смирнова Н.В.', 'Алексеева Мария Викторовна', 'ЭМК-00018452', '23.11.2026 11:18', 'Зарегистрирован', 0),
+    _Doc('MED-001255', 'Протокол осмотра', 'Иванов И.И.', 'Громов Дмитрий Олегович', 'ЭМК-00018449', '23.11.2026 10:58', 'Зарегистрирован', 0),
+    _Doc('MED-001254', 'Протокол инструментального исследования', 'Кузнецова Е.В.', 'Демидова Наталья Игоревна', 'ЭМК-00018448', '23.11.2026 10:51', 'Ожидает регистрации', 1),
+    _Doc('MED-001253', 'Направление', 'Смирнова Н.В.', 'Егоров Михаил Андреевич', 'ЭМК-00018447', '23.11.2026 10:47', 'Зарегистрирован', 0),
+    _Doc('MED-001252', 'Справка', 'Орлова М.Д.', 'Жукова Ольга Николаевна', 'ЭМК-00018446', '23.11.2026 10:43', 'Ошибка обработки', 2),
+    _Doc('MED-001250', 'Протокол лабораторного исследования', 'Петрова А.С.', 'Ильина Татьяна Сергеевна', 'ЭМК-00018444', '23.11.2026 10:34', 'Зарегистрирован', 0),
+    _Doc('MED-001249', 'Выписной эпикриз', 'Кузнецова Е.В.', 'Крылов Артём Евгеньевич', 'ЭМК-00018443', '23.11.2026 10:29', 'Ожидает регистрации', 1),
+    _Doc('MED-001245', 'Протокол осмотра', 'Иванов И.И.', 'Осипов Владимир Михайлович', 'ЭМК-00018439', '23.11.2026 10:02', 'Зарегистрирован', 0),
+  ];
+
+  static const files = [
+    ('Исходный СЭМД', 'CDA / XML', Icons.code_outlined, 'document.xml'),
+    ('PDF-представление', 'PDF', Icons.picture_as_pdf_outlined, 'document.pdf'),
+    ('Подпись врача', 'CMS / P7S', Icons.verified_user_outlined, 'doctor.p7s'),
+    ('Подпись медицинской организации', 'CMS / P7S', Icons.business_outlined, 'organization.p7s'),
+    ('Оригинальный ответ N3', 'XML / JSON', Icons.data_object_outlined, 'n3_response.json'),
+    ('Отчёт обработки', 'PDF', Icons.receipt_outlined, 'n3_response.pdf'),
+    ('Протокол проверок', 'JSON', Icons.fact_check_outlined, 'validation.json'),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    const files = [
-      ('Исходный СЭМД', 'CDA / XML', Icons.code_outlined, 'document.xml'),
-      ('PDF-представление', 'PDF', Icons.picture_as_pdf_outlined, 'document.pdf'),
-      ('Подпись врача', 'CMS / P7S', Icons.verified_user_outlined, 'doctor.p7s'),
-      ('Подпись медицинской организации', 'CMS / P7S', Icons.business_outlined, 'organization.p7s'),
-      ('Оригинальный ответ N3', 'XML / JSON', Icons.data_object_outlined, 'n3_response.json'),
-      ('Отчёт обработки', 'PDF', Icons.receipt_outlined, 'n3_response.pdf'),
-      ('Протокол проверок', 'JSON', Icons.fact_check_outlined, 'validation.json'),
-    ];
+    final doc = selectedDocument;
+    return doc == null ? _buildList() : _buildDetails(doc);
+  }
+
+  Widget _buildList() {
+    final filtered = documents.where((d) =>
+      '\${d.id} \${d.name} \${d.doctor} \${d.patient} \${d.emk}'
+        .toLowerCase().contains(query.toLowerCase())
+    ).toList();
     return _PagePadding(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        const _PageHeading(title: 'Архив документов', subtitle: 'Структурированные СЭМД, PDF-представления, подписи и ответы'),
+        const _PageHeading(title: 'Архив документов', subtitle: 'Список сформированных СЭМД и переход к карточке каждого документа'),
         const SizedBox(height: 20),
-        TextField(decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Поиск по ID документа, типу или врачу')),
+        Wrap(spacing: 10, runSpacing: 10, children: const [
+          _MiniCount(label: 'Документов в архиве', value: '1 106'),
+          _MiniCount(label: 'Зарегистрировано', value: '1 042'),
+          _MiniCount(label: 'Требуют внимания', value: '64'),
+        ]),
         const SizedBox(height: 16),
-        Card(child: Padding(padding: const EdgeInsets.all(20), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('MED-2026-001245', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
-          const SizedBox(height: 5),
-          const Text('Протокол осмотра · 23.11.2026 · Демонстрационный пациент', style: TextStyle(fontSize: 11, color: Color(0xFF7C8B9A))),
-          const SizedBox(height: 14),
-          const Row(children: [_StatusBadge(label: 'Зарегистрирован', type: 0), SizedBox(width: 8), _DemoBadge()]),
-          const Divider(height: 28),
-          const Text('Файлы документа', style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13)),
-          const SizedBox(height: 10),
-          for (final f in files)
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Container(width: 38, height: 38, decoration: BoxDecoration(color: const Color(0xFFF0F5F9), borderRadius: BorderRadius.circular(9)), child: Icon(f.$3, color: const Color(0xFF47799E), size: 19)),
-              title: Text(f.$1, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-              subtitle: Text('${f.$2} · ${f.$4}', style: const TextStyle(fontSize: 10)),
-              trailing: IconButton(tooltip: 'Демо-просмотр', onPressed: () => showDialog(context: context, builder: (_) => AlertDialog(title: Text(f.$4), content: const Text('Это макет архива. Физический файл пока не создан.'), actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Закрыть'))])), icon: const Icon(Icons.visibility_outlined, size: 19)),
-            ),
-        ]))),
+        Card(child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: TextField(
+            decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Поиск по ID, типу СЭМД, пациенту или врачу'),
+            onChanged: (value) => setState(() => query = value),
+          ),
+        )),
         const SizedBox(height: 12),
-        const Text('В прототипе файлы не создаются и не сохраняются. Архив будет подключён на следующем этапе.', style: TextStyle(fontSize: 10, color: Color(0xFF8996A4))),
+        Card(child: Column(children: [
+          const _TableHeader(labels: ['ID ДОКУМЕНТА', 'ТИП СЭМД', 'ПАЦИЕНТ', 'ДАТА', 'СТАТУС']),
+          for (final d in filtered)
+            InkWell(
+              onTap: () => setState(() => selectedDocument = d),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                child: Row(children: [
+                  Expanded(flex: 2, child: Text(d.id, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700))),
+                  Expanded(flex: 4, child: Text(d.name, style: const TextStyle(fontSize: 11))),
+                  Expanded(flex: 3, child: Text(d.patient, style: const TextStyle(fontSize: 10, color: Color(0xFF68798A)))),
+                  Expanded(flex: 2, child: Text(d.date, style: const TextStyle(fontSize: 10, color: Color(0xFF8794A3)))),
+                  Expanded(flex: 2, child: _StatusBadge(label: d.status, type: d.type)),
+                  const SizedBox(width: 8),
+                  const Icon(Icons.chevron_right, size: 18, color: Color(0xFF8794A3)),
+                ]),
+              ),
+            ),
+          if (filtered.isEmpty) const Padding(padding: EdgeInsets.all(30), child: Text('Документы не найдены')),
+        ])),
+        const SizedBox(height: 12),
+        const Text('Записи и статусы демонстрационные. Выберите строку, чтобы открыть карточку документа.', style: TextStyle(fontSize: 10, color: Color(0xFF8996A4))),
+      ]),
+    );
+  }
+
+  Widget _buildDetails(_Doc doc) {
+    return _PagePadding(
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        OutlinedButton.icon(
+          onPressed: () => setState(() => selectedDocument = null),
+          icon: const Icon(Icons.arrow_back, size: 16),
+          label: const Text('К списку документов'),
+        ),
+        const SizedBox(height: 18),
+        _PageHeading(title: doc.id, subtitle: 'Карточка архивного СЭМД'),
+        const SizedBox(height: 16),
+        Card(child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(doc.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF1B2D40))),
+            const SizedBox(height: 12),
+            Row(children: [_StatusBadge(label: doc.status, type: doc.type), const SizedBox(width: 8), const _DemoBadge()]),
+            const Divider(height: 28),
+            const _CardTitle(title: 'Сведения о документе', subtitle: 'Идентификация СЭМД и медицинской записи'),
+            const SizedBox(height: 12),
+            _InfoLine(label: 'ID документа', value: doc.id),
+            _InfoLine(label: 'ФИО пациента', value: doc.patient),
+            _InfoLine(label: 'ЭМК (номер)', value: doc.emk),
+            _InfoLine(label: 'Лечащий врач', value: doc.doctor),
+            _InfoLine(label: 'Дата формирования', value: doc.date),
+            const Divider(height: 28),
+            const _CardTitle(title: 'Файлы документа', subtitle: 'Состав архивного пакета'),
+            const SizedBox(height: 8),
+            for (final file in files)
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Container(width: 38, height: 38, decoration: BoxDecoration(color: const Color(0xFFF0F5F9), borderRadius: BorderRadius.circular(9)), child: Icon(file.$3, color: const Color(0xFF47799E), size: 19)),
+                title: Text(file.$1, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
+                subtitle: Text('\${file.$2} · \${file.$4}', style: const TextStyle(fontSize: 10)),
+                trailing: IconButton(
+                  tooltip: 'Просмотр файла',
+                  onPressed: () => showDialog(context: context, builder: (_) => AlertDialog(
+                    title: Text(file.$4),
+                    content: const Text('Это макет архива. Физический файл пока не создан.'),
+                    actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Закрыть'))],
+                  )),
+                  icon: const Icon(Icons.visibility_outlined, size: 19),
+                ),
+              ),
+            const Divider(height: 24),
+            const _CardTitle(title: 'Результаты проверок', subtitle: 'Демонстрационные статусы контроля'),
+            const SizedBox(height: 12),
+            const _CheckChip(label: 'ФРМО', detail: 'Проверено', ok: true),
+            const SizedBox(height: 7),
+            const _CheckChip(label: 'ФРМР', detail: 'Проверено', ok: true),
+            const SizedBox(height: 7),
+            const _CheckChip(label: 'УКЭП', detail: 'Проверено', ok: true),
+            const SizedBox(height: 7),
+            Row(children: [
+              const Expanded(child: Text('Валидация N3', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600))),
+              _StatusBadge(label: doc.type == 2 ? 'Не пройдена' : doc.type == 1 ? 'Есть замечания' : 'Пройдена', type: doc.type),
+            ]),
+          ]),
+        )),
+        const SizedBox(height: 12),
+        const Text('Физические файлы и реальные результаты интеграционных проверок в прототипе отсутствуют.', style: TextStyle(fontSize: 10, color: Color(0xFF8996A4))),
       ]),
     );
   }
