@@ -935,7 +935,7 @@ class _ArchivePageState extends State<ArchivePage> {
 
   Widget _buildList() {
     final filtered = documents.where((d) =>
-      '\${d.id} \${d.name} \${d.doctor} \${d.patient} \${d.emk}'
+      '${d.id} ${d.name} ${d.doctor} ${d.patient} ${d.emk}'
         .toLowerCase().contains(query.toLowerCase())
     ).toList();
     return _PagePadding(
@@ -1015,7 +1015,7 @@ class _ArchivePageState extends State<ArchivePage> {
                 contentPadding: EdgeInsets.zero,
                 leading: Container(width: 38, height: 38, decoration: BoxDecoration(color: const Color(0xFFF0F5F9), borderRadius: BorderRadius.circular(9)), child: Icon(file.$3, color: const Color(0xFF47799E), size: 19)),
                 title: Text(file.$1, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700)),
-                subtitle: Text('\${file.$2} · \${file.$4}', style: const TextStyle(fontSize: 10)),
+                subtitle: Text('${file.$2} · ${file.$4}', style: const TextStyle(fontSize: 10)),
                 trailing: IconButton(
                   tooltip: 'Просмотр файла',
                   onPressed: () => showDialog(context: context, builder: (_) => AlertDialog(
