@@ -1163,7 +1163,7 @@ class _IemkPageState extends State<IemkPage> {
       const SizedBox(height: 14),
       Card(child: Padding(padding: const EdgeInsets.all(8), child: Wrap(spacing: 6, runSpacing: 6,
         children: [for (final t in tabs) ChoiceChip(label: Text(t, style: const TextStyle(fontSize: 11)),
-          selected: section == t, onSelected: (_) => setState(() => section = t)])))),
+          selected: section == t, onSelected: (_) => setState(() => section = t))]))),
       const SizedBox(height: 14),
       if (section == 'Общие сведения') _generalInfo(p)
       else if (section == 'Медицинская история') _historyView()
@@ -1219,11 +1219,11 @@ class _IemkPageState extends State<IemkPage> {
         subtitle: 'Хронология медицинских событий и результатов обработки')),
       const Divider(height: 1),
       Padding(padding: const EdgeInsets.fromLTRB(16, 12, 16, 4), child: Wrap(spacing: 10, runSpacing: 8, children: [
-        SizedBox(width: 180, child: DropdownButtonFormField<String>(value: periodFilter,
+        SizedBox(width: 180, child: DropdownButtonFormField<String>(initialValue: periodFilter,
           decoration: const InputDecoration(labelText: 'Период'),
           items: const ['За всё время', 'Ноябрь 2026', 'Октябрь 2026'].map((v) => DropdownMenuItem(value: v, child: Text(v))).toList(),
           onChanged: (v) => setState(() => periodFilter = v ?? 'За всё время'))),
-        SizedBox(width: 190, child: DropdownButtonFormField<String>(value: typeFilter,
+        SizedBox(width: 190, child: DropdownButtonFormField<String>(initialValue: typeFilter,
           decoration: const InputDecoration(labelText: 'Тип записи'),
           items: const ['Все типы', 'Протокол', 'Направления'].map((v) => DropdownMenuItem(value: v, child: Text(v))).toList(),
           onChanged: (v) => setState(() => typeFilter = v ?? 'Все типы'))),
