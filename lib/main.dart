@@ -9,6 +9,7 @@ const _navItems = <_NavItem>[
   _NavItem('Предварительный контроль', Icons.fact_check_outlined),
   _NavItem('Очередь СЭМД', Icons.outbox_outlined),
   _NavItem('Архив документов', Icons.folder_open_outlined),
+  _NavItem('ИЭМК пациентов', Icons.medical_information_outlined),
   _NavItem('Журнал действий', Icons.receipt_long_outlined),
   _NavItem('Настройки', Icons.settings_outlined),
 ];
@@ -325,7 +326,8 @@ class _PageHost extends StatelessWidget {
       1 => const PreflightPage(),
       2 => const QueuePage(),
       3 => const ArchivePage(),
-      4 => const AuditPage(),
+      4 => const IemkPage(),
+      5 => const AuditPage(),
       _ => const SettingsPage(),
     };
   }
@@ -1047,6 +1049,188 @@ class _ArchivePageState extends State<ArchivePage> {
       ]),
     );
   }
+}
+
+
+class _IemkPatient {
+  final String id, name, birth, sex, policy, emk, address, phone;
+  final int documents, alerts;
+  const _IemkPatient(this.id, this.name, this.birth, this.sex, this.policy,
+      this.emk, this.address, this.phone, this.documents, this.alerts);
+}
+
+class IemkPage extends StatefulWidget {
+  const IemkPage({super.key});
+  @override
+  State<IemkPage> createState() => _IemkPageState();
+}
+
+class _IemkPageState extends State<IemkPage> {
+  String query = '';
+  _IemkPatient? selected;
+  String section = 'Общие сведения';
+
+  static const patients = [
+    _IemkPatient('PAT-00018452', 'Алексеева Мария Викторовна', '14.06.1987', 'Женский', '4520 1845 2291 0048', 'ЭМК-00018452', 'г. Москва, ул. Новая, д. 18', '+7 (900) 123-45-67', 18, 1),
+    _IemkPatient('PAT-00018449', 'Громов Дмитрий Олегович', '02.11.1975', 'Мужской', '4520 1844 9001 7732', 'ЭМК-00018449', 'г. Москва, ул. Садовая, д. 7', '+7 (900) 222-18-49', 12, 0),
+    _IemkPatient('PAT-00018448', 'Демидова Наталья Игоревна', '23.03.1992', 'Женский', '4520 1844 8001 6521', 'ЭМК-00018448', 'г. Москва, пр-т Мира, д. 31', '+7 (900) 333-18-48', 9, 2),
+    _IemkPatient('PAT-00018447', 'Егоров Михаил Андреевич', '09.09.1968', 'Мужской', '4520 1844 7001 4982', 'ЭМК-00018447', 'г. Москва, ул. Лесная, д. 4', '+7 (900) 444-18-47', 24, 0),
+    _IemkPatient('PAT-00018446', 'Жукова Ольга Николаевна', '17.01.1981', 'Женский', '4520 1844 6001 3819', 'ЭМК-00018446', 'г. Москва, ул. Полевая, д. 12', '+7 (900) 555-18-46', 7, 1),
+  ];
+
+  static const history = [
+    ('23.11.2026 11:18', 'Протокол консультации', 'Кардиолог', 'Зарегистрирован', 0, 'MED-001258'),
+    ('18.11.2026 09:42', 'Протокол лабораторного исследования', 'КДЛ', 'Зарегистрирован', 0, 'MED-001190'),
+    ('12.11.2026 14:05', 'Протокол осмотра', 'Терапевт', 'Зарегистрирован', 0, 'MED-001142'),
+    ('04.11.2026 10:30', 'Направление', 'Терапевт', 'Ожидает регистрации', 1, 'MED-001081'),
+    ('21.10.2026 12:16', 'Протокол инструментального исследования', 'Функциональная диагностика', 'Зарегистрирован', 0, 'MED-000974'),
+  ];
+
+  @override
+  Widget build(BuildContext context) =>
+      selected == null ? _listView() : _patientView(selected!);
+
+  Widget _listView() {
+    final filtered = patients.where((p) =>
+      (p.name + p.id + p.emk + p.policy).toLowerCase().contains(query.toLowerCase())).toList();
+    return _PagePadding(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const _PageHeading(title: 'Индивидуальная электронная медицинская карта',
+        subtitle: 'Поиск пациентов, просмотр медицинской истории и контроль документов ИЭМК',
+        trailing: _DemoBadge()),
+      const SizedBox(height: 20),
+      const Wrap(spacing: 10, runSpacing: 10, children: [
+        _MiniCount(label: 'Пациентов в реестре', value: '8 426'),
+        _MiniCount(label: 'ИЭМК с документами', value: '7 918'),
+        _MiniCount(label: 'Требуют внимания', value: '126'),
+      ]),
+      const SizedBox(height: 16),
+      Card(child: Padding(padding: const EdgeInsets.all(16), child: TextField(
+        decoration: const InputDecoration(prefixIcon: Icon(Icons.search),
+          hintText: 'Поиск по ФИО, ID пациента, номеру ИЭМК или полису ОМС'),
+        onChanged: (v) => setState(() => query = v),
+      ))),
+      const SizedBox(height: 12),
+      Card(child: Column(children: [
+        const _TableHeader(labels: ['ID / НОМЕР ИЭМК', 'ПАЦИЕНТ', 'ДАТА РОЖДЕНИЯ', 'ДОКУМЕНТЫ', 'ВНИМАНИЕ']),
+        for (final p in filtered)
+          InkWell(onTap: () => setState(() { selected = p; section = 'Общие сведения'; }),
+            child: Padding(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Row(children: [
+                Expanded(flex: 2, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(p.id, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700)),
+                  const SizedBox(height: 3),
+                  Text(p.emk, style: const TextStyle(fontSize: 9, color: Color(0xFF8190A0))),
+                ])),
+                Expanded(flex: 3, child: Text(p.name, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600))),
+                Expanded(flex: 2, child: Text(p.birth, style: const TextStyle(fontSize: 10, color: Color(0xFF718095)))),
+                Expanded(child: Text(p.documents.toString(), style: const TextStyle(fontSize: 11))),
+                Expanded(child: p.alerts == 0
+                  ? const _StatusBadge(label: 'Нет', type: 0)
+                  : _StatusBadge(label: p.alerts.toString(), type: 1)),
+                const Icon(Icons.chevron_right, size: 18, color: Color(0xFF8794A3)),
+              ]))),
+        if (filtered.isEmpty) const Padding(padding: EdgeInsets.all(30), child: Text('Пациенты не найдены')),
+      ])),
+      const SizedBox(height: 12),
+      const Text('Используются вымышленные демонстрационные данные. Поиск не обращается к Медиалог 7 или ЕГИСЗ.',
+        style: TextStyle(fontSize: 10, color: Color(0xFF8996A4))),
+    ]));
+  }
+
+  Widget _patientView(_IemkPatient p) {
+    const tabs = ['Общие сведения', 'Медицинская история', 'Документы СЭМД', 'Направления'];
+    return _PagePadding(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      OutlinedButton.icon(onPressed: () => setState(() => selected = null),
+        icon: const Icon(Icons.arrow_back, size: 16), label: const Text('К списку пациентов')),
+      const SizedBox(height: 16),
+      _PageHeading(title: p.name, subtitle: 'Индивидуальная электронная медицинская карта · ' + p.emk,
+        trailing: const _DemoBadge()),
+      const SizedBox(height: 16),
+      Card(child: Padding(padding: const EdgeInsets.all(18), child: Wrap(spacing: 24, runSpacing: 14, children: [
+        _PatientSummary(label: 'ID пациента', value: p.id),
+        _PatientSummary(label: 'Дата рождения', value: p.birth),
+        _PatientSummary(label: 'Пол', value: p.sex),
+        _PatientSummary(label: 'Документов в ИЭМК', value: p.documents.toString()),
+        _PatientSummary(label: 'Замечаний', value: p.alerts.toString()),
+      ]))),
+      const SizedBox(height: 14),
+      Card(child: Padding(padding: const EdgeInsets.all(8), child: Wrap(spacing: 6, runSpacing: 6,
+        children: [for (final t in tabs) ChoiceChip(label: Text(t, style: const TextStyle(fontSize: 11)),
+          selected: section == t, onSelected: (_) => setState(() => section = t)]))),
+      const SizedBox(height: 14),
+      if (section == 'Общие сведения') _generalInfo(p)
+      else if (section == 'Медицинская история') _historyView()
+      else if (section == 'Документы СЭМД') _historyView(onlyDocuments: true)
+      else _referralsView(),
+      const SizedBox(height: 12),
+      const Text('Карточка ИЭМК демонстрационная. Данные пациента, состав карты и статусы не получены из ЕГИСЗ.',
+        style: TextStyle(fontSize: 10, color: Color(0xFF8996A4))),
+    ]));
+  }
+
+  Widget _generalInfo(_IemkPatient p) => Card(child: Padding(padding: const EdgeInsets.all(20),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const _CardTitle(title: 'Идентификационные сведения', subtitle: 'Демонстрационная карточка пациента'),
+      const SizedBox(height: 12),
+      _InfoLine(label: 'ФИО', value: p.name),
+      _InfoLine(label: 'Дата рождения', value: p.birth),
+      _InfoLine(label: 'Пол', value: p.sex),
+      _InfoLine(label: 'Полис ОМС', value: p.policy),
+      _InfoLine(label: 'Номер ИЭМК', value: p.emk),
+      _InfoLine(label: 'Адрес', value: p.address),
+      _InfoLine(label: 'Телефон', value: p.phone),
+      const Divider(height: 26),
+      const _CardTitle(title: 'Состояние ИЭМК', subtitle: 'Сводка по документам и синхронизации'),
+      const SizedBox(height: 12),
+      const _CheckChip(label: 'Идентификация пациента', detail: 'Подтверждена (DEMO)', ok: true),
+      const SizedBox(height: 8),
+      const _CheckChip(label: 'Связь с Медиалог 7', detail: 'Локальная запись', ok: true),
+      const SizedBox(height: 8),
+      const _CheckChip(label: 'Синхронизация с ЕГИСЗ', detail: 'Не выполнялась', ok: false),
+    ])));
+
+  Widget _historyView({bool onlyDocuments = false}) {
+    final items = onlyDocuments ? history.where((e) => e.$2 != 'Направление').toList() : history;
+    return Card(child: Column(children: [
+      Padding(padding: const EdgeInsets.all(18), child: _CardTitle(
+        title: onlyDocuments ? 'Документы СЭМД' : 'Медицинская история',
+        subtitle: 'Хронология медицинских событий и результатов обработки')),
+      const Divider(height: 1),
+      for (final e in items)
+        ListTile(contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+          leading: const CircleAvatar(backgroundColor: Color(0xFFEAF2F8),
+            child: Icon(Icons.description_outlined, color: Color(0xFF47799E), size: 18)),
+          title: Text(e.$2, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+          subtitle: Text(e.$1 + ' · ' + e.$3 + ' · ' + e.$6, style: const TextStyle(fontSize: 10)),
+          trailing: _StatusBadge(label: e.$4, type: e.$5),
+          onTap: () => showDialog(context: context, builder: (_) => AlertDialog(
+            title: Text(e.$6), content: Text(e.$2 + '\n' + e.$1 + '\n' + e.$3 +
+              '\n\nКарточка документа доступна в разделе «Архив документов».'),
+            actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Закрыть'))])),
+        ),
+    ]));
+  }
+
+  Widget _referralsView() => Card(child: Padding(padding: const EdgeInsets.all(20),
+    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      const _CardTitle(title: 'Направления', subtitle: 'Направления на консультации и исследования'),
+      const SizedBox(height: 14),
+      const ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.assignment_outlined, color: Color(0xFF47799E)),
+        title: Text('Направление на консультацию кардиолога', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+        subtitle: Text('04.11.2026 · Ожидает регистрации', style: TextStyle(fontSize: 10))),
+      const ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.assignment_outlined, color: Color(0xFF47799E)),
+        title: Text('Направление на лабораторное исследование', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+        subtitle: Text('18.10.2026 · Зарегистрировано', style: TextStyle(fontSize: 10))),
+    ])));
+}
+
+class _PatientSummary extends StatelessWidget {
+  final String label, value;
+  const _PatientSummary({required this.label, required this.value});
+  @override
+  Widget build(BuildContext context) => SizedBox(width: 145, child: Column(crossAxisAlignment: CrossAxisAlignment.start,
+    children: [Text(label, style: const TextStyle(fontSize: 9, color: Color(0xFF8190A0))),
+      const SizedBox(height: 4), Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700))]));
 }
 
 class AuditPage extends StatelessWidget {
