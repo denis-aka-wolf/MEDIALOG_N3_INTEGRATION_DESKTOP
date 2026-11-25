@@ -1546,7 +1546,7 @@ class _QueuePageState extends State<QueuePage> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Column(children: [
-              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: 5200),
+              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: columns.where((c) => visibleColumns.contains(c.key)).length * 150.0),
               for (final d in filtered)
                 InkWell(
                   onTap: () => showDialog(context: context, builder: (_) => _DocumentDialog(doc: d)),
@@ -1555,7 +1555,7 @@ class _QueuePageState extends State<QueuePage> {
                     child: _columnDataRow(
                       columns.where((c) => visibleColumns.contains(c.key)).toList(),
                       {
-                        ..._patientCells(_patientFieldValues(patientId: _patientIdFromEmk(d.emk), name: d.patient, emk: d.emk)),
+                        ..._patientCells(_patientFieldValues(patientId: d.patientId, name: d.patient, emk: d.emk)),
                         'id': Text(d.id, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
                         'type': Text(d.name, style: const TextStyle(fontSize: 11)),
                         'patient': Text(d.patient, style: const TextStyle(fontSize: 10)),
@@ -1564,7 +1564,7 @@ class _QueuePageState extends State<QueuePage> {
                         'date': Text(d.date, style: const TextStyle(fontSize: 10, color: Color(0xFF8794A3))),
                         'status': _StatusBadge(label: d.status, type: d.type),
                       },
-                      width: 5200,
+                      width: columns.where((c) => visibleColumns.contains(c.key)).length * 150.0,
                     ),
                   ),
                 ),
@@ -1583,6 +1583,9 @@ class _Doc {
   final String id, name, doctor, patient, emk, date, status;
   final int type;
   const _Doc(this.id, this.name, this.doctor, this.patient, this.emk, this.date, this.status, this.type);
+
+  // Связь документа с карточкой пациента по номеру ЭМК.
+  String get patientId => _patientIdFromEmk(emk);
 }
 
 class _DocumentDialog extends StatelessWidget {
