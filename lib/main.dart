@@ -89,8 +89,8 @@ class _ColumnSettingsStore {
             Platform.environment['LOCALAPPDATA'] ??
             Platform.environment['HOME'] ??
             Directory.systemTemp.path;
-        final directory = Directory('$root\${Platform.pathSeparator}MedialogN3');
-        final file = File('\${directory.path}\${Platform.pathSeparator}column_preferences.json');
+        final directory = Directory('$root${Platform.pathSeparator}MedialogN3');
+        final file = File('${directory.path}${Platform.pathSeparator}column_preferences.json');
         if (await file.exists()) {
           final decoded = jsonDecode(await file.readAsString());
           if (decoded is Map<String, dynamic>) {
@@ -125,9 +125,9 @@ class _ColumnSettingsStore {
         Platform.environment['LOCALAPPDATA'] ??
         Platform.environment['HOME'] ??
         Directory.systemTemp.path;
-    final directory = Directory('$root\${Platform.pathSeparator}MedialogN3');
+    final directory = Directory('$root${Platform.pathSeparator}MedialogN3');
     await directory.create(recursive: true);
-    final file = File('\${directory.path}\${Platform.pathSeparator}column_preferences.json');
+    final file = File('${directory.path}${Platform.pathSeparator}column_preferences.json');
     await file.writeAsString(jsonEncode(_values), flush: true);
   }
 }
@@ -1250,24 +1250,19 @@ class _ArchivePageState extends State<ArchivePage> {
                   onTap: () => setState(() => selectedDocument = d),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-                    child: Row(children: [
-                      Expanded(
-                        child: _columnDataRow(
-                          columns.where((c) => visibleColumns.contains(c.key)).toList(),
-                          {
-                            'id': Text(d.id, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
-                            'type': Text(d.name, style: const TextStyle(fontSize: 11)),
-                            'patient': Text(d.patient, style: const TextStyle(fontSize: 10, color: Color(0xFF68798A))),
-                            'emk': Text(d.emk, style: const TextStyle(fontSize: 10)),
-                            'doctor': Text(d.doctor, style: const TextStyle(fontSize: 10)),
-                            'date': Text(d.date, style: const TextStyle(fontSize: 10, color: Color(0xFF8794A3))),
-                            'status': _StatusBadge(label: d.status, type: d.type),
-                          },
-                          width: 1100,
-                        ),
-                      ),
-                      const Icon(Icons.chevron_right, size: 18, color: Color(0xFF8794A3)),
-                    ]),
+                    child: _columnDataRow(
+                      columns.where((c) => visibleColumns.contains(c.key)).toList(),
+                      {
+                        'id': Text(d.id, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                        'type': Text(d.name, style: const TextStyle(fontSize: 11)),
+                        'patient': Text(d.patient, style: const TextStyle(fontSize: 10, color: Color(0xFF68798A))),
+                        'emk': Text(d.emk, style: const TextStyle(fontSize: 10)),
+                        'doctor': Text(d.doctor, style: const TextStyle(fontSize: 10)),
+                        'date': Text(d.date, style: const TextStyle(fontSize: 10, color: Color(0xFF8794A3))),
+                        'status': _StatusBadge(label: d.status, type: d.type),
+                      },
+                      width: 1100,
+                    ),
                   ),
                 ),
               if (filtered.isEmpty) const Padding(padding: EdgeInsets.all(30), child: Text('Документы не найдены')),
@@ -1777,7 +1772,7 @@ class _AuditPageState extends State<AuditPage> {
             child: Column(children: [
               _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: 1000),
               for (final e in events.where((e) =>
-                '\${e.$1} \${e.$2} \${e.$3} \${e.$4} \${e.$6}'.toLowerCase().contains(query.toLowerCase())))
+                (e.$1 + ' ' + e.$2 + ' ' + e.$3 + ' ' + e.$4 + ' ' + e.$6).toLowerCase().contains(query.toLowerCase())))
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
                   child: _columnDataRow(
