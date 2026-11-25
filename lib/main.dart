@@ -135,7 +135,7 @@ class _ColumnSettingsStore {
 
   static Future<void> setWidth(String screen, String key, double value) async {
     await _load();
-    _widths['$screen:$key'] = value.clamp(90.0, 360.0);
+    _widths['$screen:$key'] = value.clamp(90.0, 360.0).toDouble();
     final root = Platform.environment['APPDATA'] ??
         Platform.environment['LOCALAPPDATA'] ??
         Platform.environment['HOME'] ?? Directory.systemTemp.path;
@@ -527,7 +527,7 @@ class _ColumnSettingsButton extends StatelessWidget {
                               )),
                               Expanded(child: Slider(
                                 min: 90, max: 360, divisions: 54,
-                                value: width.clamp(90.0, 360.0),
+                                value: width.clamp(90.0, 360.0).toDouble(),
                                 label: '${width.round()} px',
                                 onChanged: (value) => setDialogState(() => widths[key] = value),
                               )),
