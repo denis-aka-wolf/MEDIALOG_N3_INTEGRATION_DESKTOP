@@ -1669,7 +1669,7 @@ class _ArchivePageState extends State<ArchivePage> {
           ),
           _HorizontalTable(
             child: Column(children: [
-              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), width: 0, screen: 'archive'),
+              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), screen: 'archive'),
               for (final d in filtered)
                 InkWell(
                   onTap: () => setState(() => selectedDocument = d),
@@ -1871,7 +1871,7 @@ class _IemkPageState extends State<IemkPage> {
         ),
         _HorizontalTable(
             child: Column(children: [
-              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), width: 0, screen: 'iemk'),
+              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), screen: 'iemk'),
             for (final p in filtered)
               InkWell(
                 onTap: () => setState(() { selected = p; section = 'Общие сведения'; }),
@@ -1909,7 +1909,7 @@ class _IemkPageState extends State<IemkPage> {
                           ? const _StatusBadge(label: 'Нет', type: 0)
                           : _StatusBadge(label: p.alerts.toString(), type: 1),
                     },
-                    width: 0, screen: 'iemk',
+                    screen: 'iemk',
                   ),
                 ),
               ),
@@ -2245,7 +2245,7 @@ class _AuditPageState extends State<AuditPage> {
           const Divider(height: 8),
           _HorizontalTable(
             child: Column(children: [
-              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), width: 0, screen: 'audit'),
+              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), screen: 'audit'),
               for (final e in events.where((e) =>
                 (e.$1 + ' ' + e.$2 + ' ' + e.$3 + ' ' + e.$4 + ' ' + e.$6 + ' ' + _auditPatientName(e.$3)).toLowerCase().contains(query.toLowerCase()) &&
                 (patientFilter == 'Все пациенты' || _auditPatientName(e.$3) == patientFilter)))
@@ -2261,7 +2261,7 @@ class _AuditPageState extends State<AuditPage> {
                       'user': Text(e.$6, style: const TextStyle(fontSize: 10, color: Color(0xFF77889A))),
                       'result': _StatusBadge(label: e.$4, type: e.$5),
                     },
-                    width: 0, screen: 'audit',
+                    screen: 'audit',
                   ),
                 ),
             ]),
