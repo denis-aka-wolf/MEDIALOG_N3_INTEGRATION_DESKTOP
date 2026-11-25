@@ -675,7 +675,7 @@ Widget _columnDataRow(List<_ColumnSpec> columns, Map<String, Widget> cells, {req
       child: Row(children: [
         for (final column in columns)
           SizedBox(
-            width: _columnWidth(column),
+            width: _columnWidth(screen, column),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 6),
               child: cells[column.key] ??
@@ -1466,7 +1466,7 @@ class _QueuePageState extends State<QueuePage> {
           ),
           _HorizontalTable(
             child: Column(children: [
-              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), width: 0, screen: 'audit'),
+              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), width: 0, screen: 'queue'),
               for (final d in filtered)
                 InkWell(
                   onTap: () => showDialog(context: context, builder: (_) => _DocumentDialog(doc: d)),
