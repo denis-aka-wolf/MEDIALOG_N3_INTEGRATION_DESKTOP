@@ -79,6 +79,7 @@ class _ColumnSpec {
 
 class _ColumnSettingsStore {
   static Map<String, List<String>> _values = {};
+  static Map<String, double> _widths = {};
   static bool _loaded = false;
   static Future<void>? _loading;
 
@@ -95,10 +96,19 @@ class _ColumnSettingsStore {
         if (await file.exists()) {
           final decoded = jsonDecode(await file.readAsString());
           if (decoded is Map<String, dynamic>) {
-            _values = decoded.map((key, value) => MapEntry(
-              key,
-              value is List ? value.whereType<String>().toList() : <String>[],
-            ));
+            _values = decoded.entries
+                .where((entry) => entry.key != '_widths')
+                .fold<Map<String, List<String>>>({}, (map, entry) {
+                  map[entry.key] = entry.value is List
+                      ? (entry.value as List).whereType<String>().toList()
+                      : <String>[];
+                  return map;
+                });
+            final storedWidths = decoded['_widths'];
+            if (storedWidths is Map) {
+              _widths = storedWidths.map((key, value) => MapEntry(
+                key.toString(), value is num ? value.toDouble() : 180.0));
+            }
           }
         }
       } catch (_) {
@@ -121,6 +131,20 @@ class _ColumnSettingsStore {
     return result.isEmpty ? options.map((e) => e.key).take(1).toList() : result;
   }
 
+  static double width(String key) => _widths[key] ?? 180.0;
+
+  static Future<void> setWidth(String key, double value) async {
+    await _load();
+    _widths[key] = value.clamp(90.0, 360.0);
+    final root = Platform.environment['APPDATA'] ??
+        Platform.environment['LOCALAPPDATA'] ??
+        Platform.environment['HOME'] ?? Directory.systemTemp.path;
+    final directory = Directory('$root${Platform.pathSeparator}MedialogN3');
+    await directory.create(recursive: true);
+    final file = File('${directory.path}${Platform.pathSeparator}column_preferences.json');
+    await file.writeAsString(jsonEncode({..._values, '_widths': _widths}), flush: true);
+  }
+
   static Future<void> set(String screen, List<String> columns) async {
     await _load();
     _values[screen] = columns;
@@ -131,7 +155,7 @@ class _ColumnSettingsStore {
     final directory = Directory('$root${Platform.pathSeparator}MedialogN3');
     await directory.create(recursive: true);
     final file = File('${directory.path}${Platform.pathSeparator}column_preferences.json');
-    await file.writeAsString(jsonEncode(_values), flush: true);
+    await file.writeAsString(jsonEncode({..._values, '_widths': _widths}), flush: true);
   }
 }
 
@@ -451,74 +475,96 @@ class _ColumnSettingsButton extends StatelessWidget {
     color: const Color(0xFF60758A),
     onPressed: () async {
       final draft = selected.toSet();
-      final result = await showDialog<List<String>>(
+      final order = options.map((e) => e.key).toList();
+      final widths = {for (final option in options) option.key: _ColumnSettingsStore.width(option.key)};
+      final result = await showDialog<({List<String> order, Map<String, double> widths})>(
         context: context,
         builder: (dialogContext) => StatefulBuilder(
           builder: (context, setDialogState) => AlertDialog(
             title: const Text('Настройка колонок'),
             content: SizedBox(
-              width: 390,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Выберите поля, которые должны отображаться в списке.',
-                    style: TextStyle(fontSize: 12, color: Color(0xFF718095))),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    height: 420,
-                    child: ListView(
-                      children: [
-                        for (final option in options)
-                          CheckboxListTile(
-                            dense: true,
-                            contentPadding: EdgeInsets.zero,
-                            controlAffinity: ListTileControlAffinity.leading,
-                            value: draft.contains(option.key),
-                            title: Text(option.label, style: const TextStyle(fontSize: 12)),
-                            onChanged: (value) => setDialogState(() {
-                              if (value == true) {
-                                draft.add(option.key);
-                              } else {
-                                draft.remove(option.key);
-                              }
-                            }),
-                          ),
-                      ],
-                    ),
+              width: 560,
+              height: 540,
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                const Text('Перетаскивайте строки для изменения порядка. Настройте видимость и ширину колонок.',
+                  style: TextStyle(fontSize: 12, color: Color(0xFF718095))),
+                const SizedBox(height: 10),
+                Expanded(
+                  child: ReorderableListView(
+                    buildDefaultDragHandles: false,
+                    onReorder: (oldIndex, newIndex) => setDialogState(() {
+                      if (newIndex > oldIndex) newIndex -= 1;
+                      final item = order.removeAt(oldIndex);
+                      order.insert(newIndex, item);
+                    }),
+                    children: [
+                      for (var index = 0; index < order.length; index++)
+                        Builder(builder: (context) {
+                          final key = order[index];
+                          final option = options.firstWhere((item) => item.key == key);
+                          final width = widths[key] ?? 180.0;
+                          return Container(
+                            key: ValueKey(key),
+                            padding: const EdgeInsets.symmetric(vertical: 3),
+                            decoration: const BoxDecoration(
+                              border: Border(bottom: BorderSide(color: Color(0xFFE7ECF1)))),
+                            child: Row(children: [
+                              ReorderableDragStartListener(
+                                index: index,
+                                child: const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 8),
+                                  child: Icon(Icons.drag_indicator, color: Color(0xFF8292A3), size: 19)),
+                              ),
+                              SizedBox(width: 245, child: CheckboxListTile(
+                                dense: true, contentPadding: EdgeInsets.zero,
+                                controlAffinity: ListTileControlAffinity.leading,
+                                value: draft.contains(key),
+                                title: Text(option.label, maxLines: 2, overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontSize: 11)),
+                                onChanged: (value) => setDialogState(() {
+                                  if (value == true) { draft.add(key); } else { draft.remove(key); }
+                                }),
+                              )),
+                              Expanded(child: Slider(
+                                min: 90, max: 360, divisions: 54,
+                                value: width.clamp(90.0, 360.0),
+                                label: '${width.round()} px',
+                                onChanged: (value) => setDialogState(() => widths[key] = value),
+                              )),
+                              SizedBox(width: 48, child: Text('${width.round()} px',
+                                style: const TextStyle(fontSize: 10, color: Color(0xFF60758A)))),
+                            ]),
+                          );
+                        }),
+                    ],
                   ),
-                  if (draft.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 8),
-                      child: Text('Необходимо оставить хотя бы одну колонку.',
-                        style: TextStyle(fontSize: 11, color: Color(0xFFC34E4E))),
-                    ),
-                ],
-              ),
+                ),
+                if (draft.isEmpty) const Padding(
+                  padding: EdgeInsets.only(top: 8),
+                  child: Text('Необходимо оставить хотя бы одну колонку.',
+                    style: TextStyle(fontSize: 11, color: Color(0xFFC34E4E)))),
+              ]),
             ),
             actions: [
               TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Отмена')),
-              TextButton(
-                onPressed: () => setDialogState(() {
-                  draft..clear()..addAll(options.map((e) => e.key));
-                }),
-                child: const Text('Выбрать все'),
-              ),
+              TextButton(onPressed: () => setDialogState(() {
+                draft..clear()..addAll(options.map((e) => e.key));
+              }), child: const Text('Выбрать все')),
               FilledButton(
-                onPressed: draft.isEmpty ? null : () => Navigator.pop(
-                  dialogContext,
-                  options.map((e) => e.key).where(draft.contains).toList(),
-                ),
-                child: const Text('Сохранить'),
-              ),
+                onPressed: draft.isEmpty ? null : () => Navigator.pop(dialogContext,
+                  (order: order.where(draft.contains).toList(), widths: widths)),
+                child: const Text('Сохранить')),
             ],
           ),
         ),
       );
       if (result != null) {
         try {
-          await _ColumnSettingsStore.set(screen, result);
-          onChanged(result);
+          await _ColumnSettingsStore.set(screen, result.order);
+          for (final entry in result.widths.entries) {
+            await _ColumnSettingsStore.setWidth(entry.key, entry.value);
+          }
+          onChanged(result.order);
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Настройки колонок сохранены на этом компьютере.')),
@@ -597,16 +643,26 @@ class _HorizontalTableState extends State<_HorizontalTable> {
   );
 }
 
+double _columnWidth(_ColumnSpec column) => _ColumnSettingsStore.width(column.key);
+
+List<_ColumnSpec> _orderedVisibleColumns(List<_ColumnSpec> columns, List<String> order) {
+  final byKey = {for (final column in columns) column.key: column};
+  return [for (final key in order) if (byKey.containsKey(key)) byKey[key]!];
+}
+
+double _columnTotalWidth(List<_ColumnSpec> columns) =>
+    columns.fold(0.0, (total, column) => total + _columnWidth(column));
+
 Widget _columnHeaderRow(List<_ColumnSpec> columns, {required double width}) =>
     SizedBox(
-      width: width,
+      width: _columnTotalWidth(columns),
       child: Row(children: [
         for (final column in columns)
-          Expanded(
-            flex: column.flex,
+          SizedBox(
+            width: _columnWidth(column),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
-              child: Text(column.label.toUpperCase(),
+              child: Text(column.label.toUpperCase(), maxLines: 2, overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Color(0xFF8794A3))),
             ),
           ),
@@ -615,11 +671,11 @@ Widget _columnHeaderRow(List<_ColumnSpec> columns, {required double width}) =>
 
 Widget _columnDataRow(List<_ColumnSpec> columns, Map<String, Widget> cells, {required double width}) =>
     SizedBox(
-      width: width,
+      width: _columnTotalWidth(columns),
       child: Row(children: [
         for (final column in columns)
-          Expanded(
-            flex: column.flex,
+          SizedBox(
+            width: _columnWidth(column),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 6),
               child: cells[column.key] ??
@@ -1410,14 +1466,14 @@ class _QueuePageState extends State<QueuePage> {
           ),
           _HorizontalTable(
             child: Column(children: [
-              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: columns.where((c) => visibleColumns.contains(c.key)).length * 180.0),
+              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), width: _columnTotalWidth(_orderedVisibleColumns(columns, visibleColumns))),
               for (final d in filtered)
                 InkWell(
                   onTap: () => showDialog(context: context, builder: (_) => _DocumentDialog(doc: d)),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 13),
                     child: _columnDataRow(
-                      columns.where((c) => visibleColumns.contains(c.key)).toList(),
+                      _orderedVisibleColumns(columns, visibleColumns),
                       {
                         ..._patientCells(_patientFieldValues(patientId: d.patientId, name: d.patient, emk: d.emk)),
                         'id': Text(d.id, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
@@ -1612,14 +1668,14 @@ class _ArchivePageState extends State<ArchivePage> {
           ),
           _HorizontalTable(
             child: Column(children: [
-              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: columns.where((c) => visibleColumns.contains(c.key)).length * 180.0),
+              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), width: columns.where((c) => visibleColumns.contains(c.key)).length * 180.0),
               for (final d in filtered)
                 InkWell(
                   onTap: () => setState(() => selectedDocument = d),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
                     child: _columnDataRow(
-                      columns.where((c) => visibleColumns.contains(c.key)).toList(),
+                      _orderedVisibleColumns(columns, visibleColumns),
                       {
                         ..._patientCells(_patientFieldValues(patientId: _patientIdFromEmk(d.emk), name: d.patient, emk: d.emk)),
                         'id': Text(d.id, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
@@ -1814,14 +1870,14 @@ class _IemkPageState extends State<IemkPage> {
         ),
         _HorizontalTable(
             child: Column(children: [
-            _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: columns.where((c) => visibleColumns.contains(c.key)).length * 180.0),
+            _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), width: columns.where((c) => visibleColumns.contains(c.key)).length * 180.0),
             for (final p in filtered)
               InkWell(
                 onTap: () => setState(() { selected = p; section = 'Общие сведения'; }),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 13),
                   child: _columnDataRow(
-                    columns.where((c) => visibleColumns.contains(c.key)).toList(),
+                    _orderedVisibleColumns(columns, visibleColumns),
                     {
                       ..._patientCells(_patientFieldValues(patientId: p.id, name: p.name, emk: p.emk, birth: p.birth, sex: p.sex, policy: p.policy, address: p.address, phone: p.phone)),
                       'FIO': Text(p.name, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
@@ -2188,14 +2244,14 @@ class _AuditPageState extends State<AuditPage> {
           const Divider(height: 8),
           _HorizontalTable(
             child: Column(children: [
-              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: columns.where((c) => visibleColumns.contains(c.key)).length * 180.0),
+              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), width: columns.where((c) => visibleColumns.contains(c.key)).length * 180.0),
               for (final e in events.where((e) =>
                 (e.$1 + ' ' + e.$2 + ' ' + e.$3 + ' ' + e.$4 + ' ' + e.$6 + ' ' + _auditPatientName(e.$3)).toLowerCase().contains(query.toLowerCase()) &&
                 (patientFilter == 'Все пациенты' || _auditPatientName(e.$3) == patientFilter)))
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
                   child: _columnDataRow(
-                    columns.where((c) => visibleColumns.contains(c.key)).toList(),
+                    _orderedVisibleColumns(columns, visibleColumns),
                     {
                       ..._patientCells(_auditPatientValues(e.$3)),
                       'time': Text(e.$1, style: const TextStyle(fontSize: 10, color: Color(0xFF77889A))),
