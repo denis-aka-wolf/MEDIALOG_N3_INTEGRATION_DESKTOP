@@ -33,7 +33,7 @@ if ([string]::IsNullOrWhiteSpace($Version)) {
 $SafeVersion = $Version -replace '[^A-Za-z0-9._-]', '_'
 $SafeDate = $Date -replace '[^A-Za-z0-9._-]', '_'
 $OutputRoot = Join-Path $ProjectRoot "out"
-$ReleaseName = ""${SafeVersion}_${SafeDate}""
+$ReleaseName = "${SafeVersion}_${SafeDate}"
 $ReleasePath = Join-Path $OutputRoot $ReleaseName
 $BuildPath = Join-Path $ProjectRoot "build\windows\x64\runner\Release"
 $ExecutableName = "medialog_n3_integration_desktop.exe"
