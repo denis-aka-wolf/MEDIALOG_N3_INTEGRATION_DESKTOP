@@ -1,5 +1,8 @@
 // Keep the standard Flutter Material API until the target SDK replacement is confirmed.
 // ignore: deprecated_member_use
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 void main() => runApp(const MedialogN3App());
@@ -64,6 +67,213 @@ class MedialogN3App extends StatelessWidget {
     );
   }
 }
+
+
+class _ColumnSpec {
+  final String key;
+  final String label;
+  final int flex;
+  const _ColumnSpec(this.key, this.label, [this.flex = 2]);
+}
+
+class _ColumnSettingsStore {
+  static Map<String, List<String>> _values = {};
+  static bool _loaded = false;
+  static Future<void>? _loading;
+
+  static Future<void> _load() async {
+    if (_loaded) return;
+    _loading ??= () async {
+      try {
+        final root = Platform.environment['APPDATA'] ??
+            Platform.environment['LOCALAPPDATA'] ??
+            Platform.environment['HOME'] ??
+            Directory.systemTemp.path;
+        final directory = Directory('$root\${Platform.pathSeparator}MedialogN3');
+        final file = File('\${directory.path}\${Platform.pathSeparator}column_preferences.json');
+        if (await file.exists()) {
+          final decoded = jsonDecode(await file.readAsString());
+          if (decoded is Map<String, dynamic>) {
+            _values = decoded.map((key, value) => MapEntry(
+              key,
+              value is List ? value.whereType<String>().toList() : <String>[],
+            ));
+          }
+        }
+      } catch (_) {
+        _values = {};
+      }
+      _loaded = true;
+    }();
+    await _loading;
+  }
+
+  static Future<List<String>> get(String screen, List<_ColumnSpec> options) async {
+    await _load();
+    final saved = _values[screen];
+    if (saved == null) return options.map((e) => e.key).where((key) =>
+      _defaultColumns[screen]?.contains(key) ?? true).toList();
+    final allowed = options.map((e) => e.key).toSet();
+    final result = saved.where(allowed.contains).toList();
+    return result.isEmpty ? options.map((e) => e.key).take(1).toList() : result;
+  }
+
+  static Future<void> set(String screen, List<String> columns) async {
+    await _load();
+    _values[screen] = columns;
+    final root = Platform.environment['APPDATA'] ??
+        Platform.environment['LOCALAPPDATA'] ??
+        Platform.environment['HOME'] ??
+        Directory.systemTemp.path;
+    final directory = Directory('$root\${Platform.pathSeparator}MedialogN3');
+    await directory.create(recursive: true);
+    final file = File('\${directory.path}\${Platform.pathSeparator}column_preferences.json');
+    await file.writeAsString(jsonEncode(_values), flush: true);
+  }
+}
+
+const _defaultColumns = <String, List<String>>{
+  'queue': ['id', 'type', 'doctor', 'date', 'status'],
+  'archive': ['id', 'type', 'patient', 'date', 'status'],
+  'iemk': ['FIO', 'N_OMON', 'NE_LE', 'NOMER_POMS', 'DOCUMENTS', 'ALERTS'],
+  'audit': ['time', 'event', 'object', 'user', 'result'],
+};
+
+class _ColumnSettingsButton extends StatelessWidget {
+  final String screen;
+  final List<_ColumnSpec> options;
+  final List<String> selected;
+  final ValueChanged<List<String>> onChanged;
+
+  const _ColumnSettingsButton({
+    required this.screen,
+    required this.options,
+    required this.selected,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) => IconButton(
+    tooltip: 'Настроить отображаемые колонки',
+    icon: const Icon(Icons.settings_outlined, size: 19),
+    color: const Color(0xFF60758A),
+    onPressed: () async {
+      final draft = selected.toSet();
+      final result = await showDialog<List<String>>(
+        context: context,
+        builder: (dialogContext) => StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            title: const Text('Настройка колонок'),
+            content: SizedBox(
+              width: 390,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('Выберите поля, которые должны отображаться в списке.',
+                    style: TextStyle(fontSize: 12, color: Color(0xFF718095))),
+                  const SizedBox(height: 12),
+                  Flexible(
+                    child: SingleChildScrollView(
+                      child: Column(children: [
+                        for (final option in options)
+                          CheckboxListTile(
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                            controlAffinity: ListTileControlAffinity.leading,
+                            value: draft.contains(option.key),
+                            title: Text(option.label, style: const TextStyle(fontSize: 12)),
+                            onChanged: (value) => setDialogState(() {
+                              if (value == true) {
+                                draft.add(option.key);
+                              } else {
+                                draft.remove(option.key);
+                              }
+                            }),
+                          ),
+                      ]),
+                    ),
+                  ),
+                  if (draft.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 8),
+                      child: Text('Необходимо оставить хотя бы одну колонку.',
+                        style: TextStyle(fontSize: 11, color: Color(0xFFC34E4E))),
+                    ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Отмена')),
+              TextButton(
+                onPressed: () => setDialogState(() {
+                  draft..clear()..addAll(options.map((e) => e.key));
+                }),
+                child: const Text('Выбрать все'),
+              ),
+              FilledButton(
+                onPressed: draft.isEmpty ? null : () => Navigator.pop(
+                  dialogContext,
+                  options.map((e) => e.key).where(draft.contains).toList(),
+                ),
+                child: const Text('Сохранить'),
+              ),
+            ],
+          ),
+        ),
+      );
+      if (result != null) {
+        try {
+          await _ColumnSettingsStore.set(screen, result);
+          onChanged(result);
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Настройки колонок сохранены на этом компьютере.')),
+            );
+          }
+        } catch (_) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Не удалось сохранить настройки колонок.')),
+            );
+          }
+        }
+      }
+    },
+  );
+}
+
+Widget _columnHeaderRow(List<_ColumnSpec> columns, {required double width}) =>
+    SizedBox(
+      width: width,
+      child: Row(children: [
+        for (final column in columns)
+          Expanded(
+            flex: column.flex,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+              child: Text(column.label.toUpperCase(),
+                style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Color(0xFF8794A3))),
+            ),
+          ),
+      ]),
+    );
+
+Widget _columnDataRow(List<_ColumnSpec> columns, Map<String, Widget> cells, {required double width}) =>
+    SizedBox(
+      width: width,
+      child: Row(children: [
+        for (final column in columns)
+          Expanded(
+            flex: column.flex,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: cells[column.key] ??
+                const Text('Не указано', style: TextStyle(fontSize: 10, color: Color(0xFF8794A3))),
+            ),
+          ),
+      ]),
+    );
 
 class _NavItem {
   final String title;
@@ -730,6 +940,24 @@ class QueuePage extends StatefulWidget {
 class _QueuePageState extends State<QueuePage> {
   String filter = 'Все';
   String query = '';
+  List<String> visibleColumns = _defaultColumns['queue']!;
+  static const columns = <_ColumnSpec>[
+    _ColumnSpec('id', 'ID документа', 2),
+    _ColumnSpec('type', 'Тип СЭМД', 4),
+    _ColumnSpec('patient', 'Пациент', 3),
+    _ColumnSpec('emk', 'Номер ЭМК', 2),
+    _ColumnSpec('doctor', 'Врач', 2),
+    _ColumnSpec('date', 'Дата формирования', 2),
+    _ColumnSpec('status', 'Статус', 2),
+  ];
+  @override
+  void initState() {
+    super.initState();
+    _ColumnSettingsStore.get('queue', columns).then((value) {
+      if (mounted) setState(() => visibleColumns = value);
+    });
+  }
+
   final docs = const [
     _Doc('MED-001258', 'Протокол консультации', 'Смирнова Н.В.', 'Алексеева Мария Викторовна', 'ЭМК-00018452', '23.11.2026 11:18', 'Готов к отправке', 0),
     _Doc('MED-001257', 'Протокол лабораторного исследования', 'Орлова М.Д.', 'Белов Андрей Сергеевич', 'ЭМК-00018451', '23.11.2026 11:12', 'Ожидает проверки', 1),
@@ -795,22 +1023,45 @@ class _QueuePageState extends State<QueuePage> {
         )),
         const SizedBox(height: 12),
         Card(child: Column(children: [
-          const _TableHeader(labels: ['ID ДОКУМЕНТА', 'ТИП СЭМД', 'ВРАЧ', 'ДАТА', 'СТАТУС']),
-          for (final d in filtered)
-            InkWell(
-              onTap: () => showDialog(context: context, builder: (_) => _DocumentDialog(doc: d)),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
-                child: Row(children: [
-                  Expanded(flex: 2, child: Text(d.id, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700))),
-                  Expanded(flex: 4, child: Text(d.name, style: const TextStyle(fontSize: 11))),
-                  Expanded(flex: 2, child: Text(d.doctor, style: const TextStyle(fontSize: 11, color: Color(0xFF68798A)))),
-                  Expanded(flex: 2, child: Text(d.date, style: const TextStyle(fontSize: 10, color: Color(0xFF8794A3)))),
-                  Expanded(flex: 2, child: _StatusBadge(label: d.status, type: d.type)),
-                ]),
+          Padding(
+            padding: const EdgeInsets.only(right: 8, top: 2),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: _ColumnSettingsButton(
+                screen: 'queue',
+                options: columns,
+                selected: visibleColumns,
+                onChanged: (value) => setState(() => visibleColumns = value),
               ),
             ),
-          if (filtered.isEmpty) const Padding(padding: EdgeInsets.all(30), child: Text('Документы не найдены')),
+          ),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Column(children: [
+              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: 1120),
+              for (final d in filtered)
+                InkWell(
+                  onTap: () => showDialog(context: context, builder: (_) => _DocumentDialog(doc: d)),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 13),
+                    child: _columnDataRow(
+                      columns.where((c) => visibleColumns.contains(c.key)).toList(),
+                      {
+                        'id': Text(d.id, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                        'type': Text(d.name, style: const TextStyle(fontSize: 11)),
+                        'patient': Text(d.patient, style: const TextStyle(fontSize: 10)),
+                        'emk': Text(d.emk, style: const TextStyle(fontSize: 10)),
+                        'doctor': Text(d.doctor, style: const TextStyle(fontSize: 10, color: Color(0xFF68798A))),
+                        'date': Text(d.date, style: const TextStyle(fontSize: 10, color: Color(0xFF8794A3))),
+                        'status': _StatusBadge(label: d.status, type: d.type),
+                      },
+                      width: 1120,
+                    ),
+                  ),
+                ),
+              if (filtered.isEmpty) const Padding(padding: EdgeInsets.all(30), child: Text('Документы не найдены')),
+            ]),
+          ),
         ])),
         const SizedBox(height: 12),
         const Text('Все записи и статусы на этой странице демонстрационные.', style: TextStyle(fontSize: 10, color: Color(0xFF8996A4))),
@@ -908,6 +1159,24 @@ class ArchivePage extends StatefulWidget {
 class _ArchivePageState extends State<ArchivePage> {
   String query = '';
   _Doc? selectedDocument;
+  List<String> visibleColumns = _defaultColumns['archive']!;
+  static const columns = <_ColumnSpec>[
+    _ColumnSpec('id', 'ID документа', 2),
+    _ColumnSpec('type', 'Тип СЭМД', 4),
+    _ColumnSpec('patient', 'Пациент', 3),
+    _ColumnSpec('emk', 'Номер ЭМК', 2),
+    _ColumnSpec('doctor', 'Врач', 2),
+    _ColumnSpec('date', 'Дата формирования', 2),
+    _ColumnSpec('status', 'Статус', 2),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _ColumnSettingsStore.get('archive', columns).then((value) {
+      if (mounted) setState(() => visibleColumns = value);
+    });
+  }
 
   static const documents = [
     _Doc('MED-001258', 'Протокол консультации', 'Смирнова Н.В.', 'Алексеева Мария Викторовна', 'ЭМК-00018452', '23.11.2026 11:18', 'Зарегистрирован', 0),
@@ -960,24 +1229,50 @@ class _ArchivePageState extends State<ArchivePage> {
         )),
         const SizedBox(height: 12),
         Card(child: Column(children: [
-          const _TableHeader(labels: ['ID ДОКУМЕНТА', 'ТИП СЭМД', 'ПАЦИЕНТ', 'ДАТА', 'СТАТУС']),
-          for (final d in filtered)
-            InkWell(
-              onTap: () => setState(() => selectedDocument = d),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                child: Row(children: [
-                  Expanded(flex: 2, child: Text(d.id, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700))),
-                  Expanded(flex: 4, child: Text(d.name, style: const TextStyle(fontSize: 11))),
-                  Expanded(flex: 3, child: Text(d.patient, style: const TextStyle(fontSize: 10, color: Color(0xFF68798A)))),
-                  Expanded(flex: 2, child: Text(d.date, style: const TextStyle(fontSize: 10, color: Color(0xFF8794A3)))),
-                  Expanded(flex: 2, child: _StatusBadge(label: d.status, type: d.type)),
-                  const SizedBox(width: 8),
-                  const Icon(Icons.chevron_right, size: 18, color: Color(0xFF8794A3)),
-                ]),
+          Padding(
+            padding: const EdgeInsets.only(right: 8, top: 2),
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: _ColumnSettingsButton(
+                screen: 'archive',
+                options: columns,
+                selected: visibleColumns,
+                onChanged: (value) => setState(() => visibleColumns = value),
               ),
             ),
-          if (filtered.isEmpty) const Padding(padding: EdgeInsets.all(30), child: Text('Документы не найдены')),
+          ),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Column(children: [
+              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: 1120),
+              for (final d in filtered)
+                InkWell(
+                  onTap: () => setState(() => selectedDocument = d),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                    child: Row(children: [
+                      Expanded(
+                        child: _columnDataRow(
+                          columns.where((c) => visibleColumns.contains(c.key)).toList(),
+                          {
+                            'id': Text(d.id, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+                            'type': Text(d.name, style: const TextStyle(fontSize: 11)),
+                            'patient': Text(d.patient, style: const TextStyle(fontSize: 10, color: Color(0xFF68798A))),
+                            'emk': Text(d.emk, style: const TextStyle(fontSize: 10)),
+                            'doctor': Text(d.doctor, style: const TextStyle(fontSize: 10)),
+                            'date': Text(d.date, style: const TextStyle(fontSize: 10, color: Color(0xFF8794A3))),
+                            'status': _StatusBadge(label: d.status, type: d.type),
+                          },
+                          width: 1100,
+                        ),
+                      ),
+                      const Icon(Icons.chevron_right, size: 18, color: Color(0xFF8794A3)),
+                    ]),
+                  ),
+                ),
+              if (filtered.isEmpty) const Padding(padding: EdgeInsets.all(30), child: Text('Документы не найдены')),
+            ]),
+          ),
         ])),
         const SizedBox(height: 12),
         const Text('Записи и статусы демонстрационные. Выберите строку, чтобы открыть карточку документа.', style: TextStyle(fontSize: 10, color: Color(0xFF8996A4))),
@@ -1073,6 +1368,44 @@ class _IemkPageState extends State<IemkPage> {
   String periodFilter = 'За всё время';
   String? selectedDocumentId;
   bool refreshed = false;
+  List<String> visibleColumns = _defaultColumns['iemk']!;
+  // Метаданные PATIENTS: Field_Name / Field_Label / SQL_DATA_TYPE.
+  static const columns = <_ColumnSpec>[
+    _ColumnSpec('PATIENTS_ID', 'ID записи · int', 2),
+    _ColumnSpec('FIO', 'ФИО · varchar(99)', 4),
+    _ColumnSpec('NOM', 'Фамилия · varchar(50)', 2),
+    _ColumnSpec('PRENOM', 'Имя · varchar(50)', 2),
+    _ColumnSpec('PATRONYME', 'Отчество · varchar(50)', 2),
+    _ColumnSpec('N_OMON', 'Номер ЭМК · varchar(25)', 2),
+    _ColumnSpec('NOMER_MEDICISKOJ_KART', 'Медицинская карта № · varchar(10)', 2),
+    _ColumnSpec('NE_LE', 'Дата рождения · datetime', 2),
+    _ColumnSpec('POL', 'Пол · int', 1),
+    _ColumnSpec('NOMER_POMS', 'Номер полиса ОМС · varchar(99)', 2),
+    _ColumnSpec('SERIQ_POMS', 'Серия полиса ОМС · varchar(99)', 2),
+    _ColumnSpec('MOBIL_TELEFON', 'Мобильный телефон · varchar(99)', 2),
+    _ColumnSpec('TEL', 'Телефон · varchar(99)', 2),
+    _ColumnSpec('EMAIL', 'Электронная почта · varchar(60)', 2),
+    _ColumnSpec('SNILS', 'СНИЛС · varchar(14)', 2),
+    _ColumnSpec('ADRES_PO_PROPISKE', 'Адрес постоянного места жительства · text', 3),
+    _ColumnSpec('ADRES_FAKTIHESKIJ', 'Адрес регистрации по месту пребывания · text', 3),
+    _ColumnSpec('ARCHIVE', 'Архивный · bit', 1),
+    _ColumnSpec('DMS', 'ДМС · bit', 1),
+    _ColumnSpec('OMS', 'ОМС · bit', 1),
+    _ColumnSpec('INVALIDNOST', 'Инвалидность · int', 2),
+    _ColumnSpec('DISPANSERNAQ_GRUPPA', 'Диспансерная группа · int', 2),
+    _ColumnSpec('DATA_POSTANOVKI_NA_UHET', 'Дата постановки на учёт · datetime', 2),
+    _ColumnSpec('NASELENN_J_PUNKT', 'Населённый пункт · varchar(99)', 2),
+    _ColumnSpec('DOCUMENTS', 'Документы ИЭМК · демо', 1),
+    _ColumnSpec('ALERTS', 'Замечания · демо', 1),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _ColumnSettingsStore.get('iemk', columns).then((value) {
+      if (mounted) setState(() => visibleColumns = value);
+    });
+  }
 
   static const patients = [
     _IemkPatient('PAT-00018452', 'Алексеева Мария Викторовна', '14.06.1987', 'Женский', '4520 1845 2291 0048', 'ЭМК-00018452', 'г. Москва, ул. Новая, д. 18', '+7 (900) 123-45-67', 18, 1),
@@ -1117,25 +1450,66 @@ class _IemkPageState extends State<IemkPage> {
       ))),
       const SizedBox(height: 12),
       Card(child: Column(children: [
-        const _TableHeader(labels: ['ID / НОМЕР ИЭМК', 'ПАЦИЕНТ', 'ДАТА РОЖДЕНИЯ', 'ДОКУМЕНТЫ', 'ВНИМАНИЕ']),
-        for (final p in filtered)
-          InkWell(onTap: () => setState(() { selected = p; section = 'Общие сведения'; }),
-            child: Padding(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-              child: Row(children: [
-                Expanded(flex: 2, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text(p.id, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700)),
-                  const SizedBox(height: 3),
-                  Text(p.emk, style: const TextStyle(fontSize: 9, color: Color(0xFF8190A0))),
-                ])),
-                Expanded(flex: 3, child: Text(p.name, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600))),
-                Expanded(flex: 2, child: Text(p.birth, style: const TextStyle(fontSize: 10, color: Color(0xFF718095)))),
-                Expanded(child: Text(p.documents.toString(), style: const TextStyle(fontSize: 11))),
-                Expanded(child: p.alerts == 0
-                  ? const _StatusBadge(label: 'Нет', type: 0)
-                  : _StatusBadge(label: p.alerts.toString(), type: 1)),
-                const Icon(Icons.chevron_right, size: 18, color: Color(0xFF8794A3)),
-              ]))),
-        if (filtered.isEmpty) const Padding(padding: EdgeInsets.all(30), child: Text('Пациенты не найдены')),
+        Padding(
+          padding: const EdgeInsets.only(right: 8, top: 2),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: _ColumnSettingsButton(
+              screen: 'iemk',
+              options: columns,
+              selected: visibleColumns,
+              onChanged: (value) => setState(() => visibleColumns = value),
+            ),
+          ),
+        ),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Column(children: [
+            _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: 1450),
+            for (final p in filtered)
+              InkWell(
+                onTap: () => setState(() { selected = p; section = 'Общие сведения'; }),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 13),
+                  child: _columnDataRow(
+                    columns.where((c) => visibleColumns.contains(c.key)).toList(),
+                    {
+                      'PATIENTS_ID': Text(p.id, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700)),
+                      'FIO': Text(p.name, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+                      'NOM': Text(p.name.split(' ').first, style: const TextStyle(fontSize: 10)),
+                      'PRENOM': Text(p.name.split(' ').length > 1 ? p.name.split(' ')[1] : '—', style: const TextStyle(fontSize: 10)),
+                      'PATRONYME': Text(p.name.split(' ').length > 2 ? p.name.split(' ').skip(2).join(' ') : '—', style: const TextStyle(fontSize: 10)),
+                      'N_OMON': Text(p.emk, style: const TextStyle(fontSize: 10)),
+                      'NOMER_MEDICISKOJ_KART': const Text('—', style: TextStyle(fontSize: 10)),
+                      'NE_LE': Text(p.birth, style: const TextStyle(fontSize: 10, color: Color(0xFF718095))),
+                      'POL': Text(p.sex, style: const TextStyle(fontSize: 10)),
+                      'NOMER_POMS': Text(p.policy, style: const TextStyle(fontSize: 10)),
+                      'SERIQ_POMS': const Text('—', style: TextStyle(fontSize: 10)),
+                      'MOBIL_TELEFON': Text(p.phone, style: const TextStyle(fontSize: 10)),
+                      'TEL': Text(p.phone, style: const TextStyle(fontSize: 10)),
+                      'EMAIL': const Text('—', style: TextStyle(fontSize: 10)),
+                      'SNILS': const Text('—', style: TextStyle(fontSize: 10)),
+                      'ADRES_PO_PROPISKE': Text(p.address, style: const TextStyle(fontSize: 10)),
+                      'ADRES_FAKTIHESKIJ': const Text('—', style: TextStyle(fontSize: 10)),
+                      'ARCHIVE': const Text('Нет', style: TextStyle(fontSize: 10)),
+                      'DMS': const Text('—', style: TextStyle(fontSize: 10)),
+                      'OMS': const Text('Да', style: TextStyle(fontSize: 10)),
+                      'INVALIDNOST': const Text('—', style: TextStyle(fontSize: 10)),
+                      'DISPANSERNAQ_GRUPPA': const Text('—', style: TextStyle(fontSize: 10)),
+                      'DATA_POSTANOVKI_NA_UHET': const Text('—', style: TextStyle(fontSize: 10)),
+                      'NASELENN_J_PUNKT': const Text('Москва', style: TextStyle(fontSize: 10)),
+                      'DOCUMENTS': Text(p.documents.toString(), style: const TextStyle(fontSize: 11)),
+                      'ALERTS': p.alerts == 0
+                          ? const _StatusBadge(label: 'Нет', type: 0)
+                          : _StatusBadge(label: p.alerts.toString(), type: 1),
+                    },
+                    width: 1450,
+                  ),
+                ),
+              ),
+            if (filtered.isEmpty) const Padding(padding: EdgeInsets.all(30), child: Text('Пациенты не найдены')),
+          ]),
+        ),
       ])),
       const SizedBox(height: 12),
       const Text('Используются вымышленные демонстрационные данные. Поиск не обращается к Медиалог 7 или ЕГИСЗ.',
@@ -1329,8 +1703,31 @@ class _PatientSummary extends StatelessWidget {
       const SizedBox(height: 4), Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700))]));
 }
 
-class AuditPage extends StatelessWidget {
+class AuditPage extends StatefulWidget {
   const AuditPage({super.key});
+
+  @override
+  State<AuditPage> createState() => _AuditPageState();
+}
+
+class _AuditPageState extends State<AuditPage> {
+  String query = '';
+  List<String> visibleColumns = _defaultColumns['audit']!;
+  static const columns = <_ColumnSpec>[
+    _ColumnSpec('time', 'Время', 2),
+    _ColumnSpec('event', 'Событие', 4),
+    _ColumnSpec('object', 'Объект', 2),
+    _ColumnSpec('user', 'Пользователь', 2),
+    _ColumnSpec('result', 'Результат', 2),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _ColumnSettingsStore.get('audit', columns).then((value) {
+      if (mounted) setState(() => visibleColumns = value);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1360,27 +1757,43 @@ class AuditPage extends StatelessWidget {
         ]),
         const SizedBox(height: 16),
         Card(child: Padding(padding: const EdgeInsets.all(15), child: Column(children: [
-          const TextField(decoration: InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Поиск по событию, пользователю или ID')),
-          const SizedBox(height: 12),
-          const Row(children: [
-            Expanded(child: Text('ВРЕМЯ', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Color(0xFF8794A3)))),
-            Expanded(flex: 3, child: Text('СОБЫТИЕ', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Color(0xFF8794A3)))),
-            Expanded(flex: 2, child: Text('ОБЪЕКТ', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Color(0xFF8794A3)))),
-            Expanded(flex: 2, child: Text('ПОЛЬЗОВАТЕЛЬ', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Color(0xFF8794A3)))),
-            Expanded(flex: 2, child: Text('РЕЗУЛЬТАТ', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Color(0xFF8794A3)))),
-          ]),
-          const Divider(height: 18),
-          for (final e in events)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              child: Row(children: [
-                Expanded(child: Text(e.$1, style: const TextStyle(fontSize: 10, color: Color(0xFF77889A)))),
-                Expanded(flex: 3, child: Text(e.$2, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600))),
-                Expanded(flex: 2, child: Text(e.$3, style: const TextStyle(fontSize: 10))),
-                Expanded(flex: 2, child: Text(e.$6, style: const TextStyle(fontSize: 10, color: Color(0xFF77889A)))),
-                Expanded(flex: 2, child: _StatusBadge(label: e.$4, type: e.$5)),
-              ]),
+          TextField(
+            decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Поиск по событию, пользователю или ID'),
+            onChanged: (value) => setState(() => query = value),
+          ),
+          const SizedBox(height: 8),
+          Align(
+            alignment: Alignment.centerRight,
+            child: _ColumnSettingsButton(
+              screen: 'audit',
+              options: columns,
+              selected: visibleColumns,
+              onChanged: (value) => setState(() => visibleColumns = value),
             ),
+          ),
+          const Divider(height: 8),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Column(children: [
+              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: 1000),
+              for (final e in events.where((e) =>
+                '\${e.$1} \${e.$2} \${e.$3} \${e.$4} \${e.$6}'.toLowerCase().contains(query.toLowerCase())))
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
+                  child: _columnDataRow(
+                    columns.where((c) => visibleColumns.contains(c.key)).toList(),
+                    {
+                      'time': Text(e.$1, style: const TextStyle(fontSize: 10, color: Color(0xFF77889A))),
+                      'event': Text(e.$2, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+                      'object': Text(e.$3, style: const TextStyle(fontSize: 10)),
+                      'user': Text(e.$6, style: const TextStyle(fontSize: 10, color: Color(0xFF77889A))),
+                      'result': _StatusBadge(label: e.$4, type: e.$5),
+                    },
+                    width: 1000,
+                  ),
+                ),
+            ]),
+          ),
         ]))),
         const SizedBox(height: 10),
         const Text('Журнал демонстрационный. Персональные данные и содержимое медицинских документов в технический лог не выводятся.', style: TextStyle(fontSize: 10, color: Color(0xFF8996A4))),
