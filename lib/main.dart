@@ -458,132 +458,6 @@ const _defaultColumns = <String, List<String>>{
   'audit': ['FIO', 'N_OMON', 'PATIENTS_ID', 'time', 'event', 'object', 'user', 'result'],
 };
 
-class _ColumnSettingsButton extends StatelessWidget {
-  final String screen;
-  final List<_ColumnSpec> options;
-  final List<String> selected;
-  final ValueChanged<List<String>> onChanged;
-
-  const _ColumnSettingsButton({
-    required this.screen,
-    required this.options,
-    required this.selected,
-    required this.onChanged,
-  });
-
-  @override
-  Widget build(BuildContext context) => IconButton(
-    tooltip: 'Настроить отображаемые колонки',
-    icon: const Icon(Icons.settings_outlined, size: 19),
-    color: const Color(0xFF60758A),
-    onPressed: () async {
-      final draft = selected.toSet();
-      final order = [...selected, ...options.map((e) => e.key).where((key) => !selected.contains(key))];
-      final widths = {for (final option in options) option.key: _ColumnSettingsStore.width(screen, option.key)};
-      final result = await showDialog<({List<String> order, Map<String, double> widths})>(
-        context: context,
-        builder: (dialogContext) => StatefulBuilder(
-          builder: (context, setDialogState) => AlertDialog(
-            title: const Text('Настройка колонок'),
-            content: SizedBox(
-              width: 560,
-              height: 540,
-              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                const Text('Перетаскивайте строки для изменения порядка. Настройте видимость и ширину колонок.',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF718095))),
-                const SizedBox(height: 10),
-                Expanded(
-                  child: ReorderableListView(
-                    buildDefaultDragHandles: false,
-                    onReorderItem: (oldIndex, newIndex) => setDialogState(() {
-                      final item = order.removeAt(oldIndex);
-                      order.insert(newIndex, item);
-                    }),
-                    children: [
-                      for (var index = 0; index < order.length; index++)
-                        Builder(
-                          key: ValueKey(order[index]),
-                          builder: (context) {
-                          final key = order[index];
-                          final option = options.firstWhere((item) => item.key == key);
-                          final width = widths[key] ?? 180.0;
-                          return Container(
-                            key: ValueKey(key),
-                            padding: const EdgeInsets.symmetric(vertical: 3),
-                            decoration: const BoxDecoration(
-                              border: Border(bottom: BorderSide(color: Color(0xFFE7ECF1)))),
-                            child: Row(children: [
-                              ReorderableDragStartListener(
-                                index: index,
-                                child: const Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 8),
-                                  child: Icon(Icons.drag_indicator, color: Color(0xFF8292A3), size: 19)),
-                              ),
-                              SizedBox(width: 245, child: CheckboxListTile(
-                                dense: true, contentPadding: EdgeInsets.zero,
-                                controlAffinity: ListTileControlAffinity.leading,
-                                value: draft.contains(key),
-                                title: Text(option.label, maxLines: 2, overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(fontSize: 11)),
-                                onChanged: (value) => setDialogState(() {
-                                  if (value == true) { draft.add(key); } else { draft.remove(key); }
-                                }),
-                              )),
-                              Expanded(child: Slider(
-                                min: 90, max: 360, divisions: 54,
-                                value: width.clamp(90.0, 360.0).toDouble(),
-                                label: '${width.round()} px',
-                                onChanged: (value) => setDialogState(() => widths[key] = value),
-                              )),
-                              SizedBox(width: 48, child: Text('${width.round()} px',
-                                style: const TextStyle(fontSize: 10, color: Color(0xFF60758A)))),
-                            ]),
-                          );
-                        }),
-                    ],
-                  ),
-                ),
-                if (draft.isEmpty) const Padding(
-                  padding: EdgeInsets.only(top: 8),
-                  child: Text('Необходимо оставить хотя бы одну колонку.',
-                    style: TextStyle(fontSize: 11, color: Color(0xFFC34E4E)))),
-              ]),
-            ),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Отмена')),
-              TextButton(onPressed: () => setDialogState(() {
-                draft..clear()..addAll(options.map((e) => e.key));
-              }), child: const Text('Выбрать все')),
-              FilledButton(
-                onPressed: draft.isEmpty ? null : () => Navigator.pop(dialogContext,
-                  (order: order.where(draft.contains).toList(), widths: widths)),
-                child: const Text('Сохранить')),
-            ],
-          ),
-        ),
-      );
-      if (result != null) {
-        try {
-          await _ColumnSettingsStore.set(screen, result.order);
-          await _ColumnSettingsStore.setWidths(screen, result.widths);
-          onChanged(result.order);
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Настройки колонок сохранены на этом компьютере.')),
-            );
-          }
-        } catch (_) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Не удалось сохранить настройки колонок.')),
-            );
-          }
-        }
-      }
-    },
-  );
-}
-
 class _HorizontalTable extends StatefulWidget {
   final Widget child;
   const _HorizontalTable({required this.child});
@@ -655,37 +529,122 @@ List<_ColumnSpec> _orderedVisibleColumns(List<_ColumnSpec> columns, List<String>
 double _columnTotalWidth(String screen, List<_ColumnSpec> columns) =>
     columns.fold(0.0, (total, column) => total + _columnWidth(screen, column));
 
-Widget _columnHeaderRow(List<_ColumnSpec> columns, {required String screen}) =>
-    SizedBox(
-      width: _columnTotalWidth(screen, columns),
-      child: Row(children: [
-        for (final column in columns)
-          SizedBox(
-            width: _columnWidth(screen, column),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
-              child: Text(column.label.toUpperCase(), maxLines: 2, overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 9, fontWeight: FontWeight.w800, color: Color(0xFF8794A3))),
-            ),
-          ),
-      ]),
-    );
+final ValueNotifier<int> _columnLayoutRevision = ValueNotifier<int>(0);
 
-Widget _columnDataRow(List<_ColumnSpec> columns, Map<String, Widget> cells, {required String screen}) =>
-    SizedBox(
-      width: _columnTotalWidth(screen, columns),
-      child: Row(children: [
-        for (final column in columns)
-          SizedBox(
-            width: _columnWidth(screen, column),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
-              child: cells[column.key] ??
-                const Text('Не указано', style: TextStyle(fontSize: 10, color: Color(0xFF8794A3))),
-            ),
+Widget _columnHeaderRow(
+  List<_ColumnSpec> columns, {
+  required String screen,
+  required ValueChanged<List<String>> onOrderChanged,
+}) => SizedBox(
+  width: _columnTotalWidth(screen, columns),
+  height: 54,
+  child: ReorderableListView(
+    scrollDirection: Axis.horizontal,
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    buildDefaultDragHandles: false,
+    onReorder: (oldIndex, newIndex) {
+      if (newIndex > oldIndex) newIndex--;
+      final reordered = [...columns];
+      final item = reordered.removeAt(oldIndex);
+      reordered.insert(newIndex, item);
+      final order = reordered.map((column) => column.key).toList();
+      onOrderChanged(order);
+      _ColumnSettingsStore.set(screen, order);
+    },
+    children: [
+      for (var index = 0; index < columns.length; index++)
+        SizedBox(
+          key: ValueKey(columns[index].key),
+          width: _columnWidth(screen, columns[index]),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              ReorderableDragStartListener(
+                index: index,
+                child: Tooltip(
+                  message: 'Перетащите, чтобы изменить порядок колонки',
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(8, 10, 12, 10),
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        columns[index].label.toUpperCase(),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w800,
+                          color: Color(0xFF52677D),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                right: 0,
+                top: 5,
+                bottom: 5,
+                child: MouseRegion(
+                  cursor: SystemMouseCursors.resizeColumn,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onHorizontalDragUpdate: (details) {
+                      final nextWidth = (_columnWidth(screen, columns[index]) +
+                              details.delta.dx)
+                          .clamp(90.0, 520.0)
+                          .toDouble();
+                      _ColumnSettingsStore._widths['$screen:${columns[index].key}'] = nextWidth;
+                      _columnLayoutRevision.value++;
+                    },
+                    onHorizontalDragEnd: (_) {
+                      _ColumnSettingsStore.setWidths(screen, {
+                        columns[index].key: _columnWidth(screen, columns[index]),
+                      });
+                    },
+                    child: const SizedBox(
+                      width: 9,
+                      child: Center(
+                        child: VerticalDivider(
+                          width: 1,
+                          thickness: 1,
+                          color: Color(0xFFB8C5D1),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-      ]),
-    );
+        ),
+    ],
+  ),
+);
+
+Widget _columnDataRow(
+  List<_ColumnSpec> columns,
+  Map<String, Widget> cells, {
+  required String screen,
+}) => ValueListenableBuilder<int>(
+  valueListenable: _columnLayoutRevision,
+  builder: (context, revision, child) => SizedBox(
+    width: _columnTotalWidth(screen, columns),
+    child: Row(children: [
+      for (final column in columns)
+        SizedBox(
+          width: _columnWidth(screen, column),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6),
+            child: cells[column.key] ??
+                const Text('Не указано',
+                    style: TextStyle(fontSize: 10, color: Color(0xFF8794A3))),
+          ),
+        ),
+    ]),
+  ),
+);
 
 class _NavItem {
   final String title;
@@ -1454,21 +1413,13 @@ class _QueuePageState extends State<QueuePage> {
         _patientFilter(patientFilter, (value) => setState(() => patientFilter = value)),
         const SizedBox(height: 12),
         Card(child: Column(children: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8, top: 2),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: _ColumnSettingsButton(
-                screen: 'queue',
-                options: columns,
-                selected: visibleColumns,
-                onChanged: (value) => setState(() => visibleColumns = value),
-              ),
-            ),
-          ),
           _HorizontalTable(
             child: Column(children: [
-              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), screen: 'queue'),
+              _columnHeaderRow(
+                _orderedVisibleColumns(columns, visibleColumns),
+                screen: 'queue',
+                onOrderChanged: (value) => setState(() => visibleColumns = value),
+              ),
               for (final d in filtered)
                 InkWell(
                   onTap: () => showDialog(context: context, builder: (_) => _DocumentDialog(doc: d)),
@@ -1656,21 +1607,13 @@ class _ArchivePageState extends State<ArchivePage> {
         )),
         const SizedBox(height: 12),
         Card(child: Column(children: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8, top: 2),
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: _ColumnSettingsButton(
-                screen: 'archive',
-                options: columns,
-                selected: visibleColumns,
-                onChanged: (value) => setState(() => visibleColumns = value),
-              ),
-            ),
-          ),
           _HorizontalTable(
             child: Column(children: [
-              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), screen: 'archive'),
+              _columnHeaderRow(
+                _orderedVisibleColumns(columns, visibleColumns),
+                screen: 'archive',
+                onOrderChanged: (value) => setState(() => visibleColumns = value),
+              ),
               for (final d in filtered)
                 InkWell(
                   onTap: () => setState(() => selectedDocument = d),
@@ -1858,21 +1801,13 @@ class _IemkPageState extends State<IemkPage> {
       ))),
       const SizedBox(height: 12),
       Card(child: Column(children: [
-        Padding(
-          padding: const EdgeInsets.only(right: 8, top: 2),
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: _ColumnSettingsButton(
-              screen: 'iemk',
-              options: columns,
-              selected: visibleColumns,
-              onChanged: (value) => setState(() => visibleColumns = value),
-            ),
-          ),
-        ),
         _HorizontalTable(
             child: Column(children: [
-              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), screen: 'iemk'),
+              _columnHeaderRow(
+                _orderedVisibleColumns(columns, visibleColumns),
+                screen: 'iemk',
+                onOrderChanged: (value) => setState(() => visibleColumns = value),
+              ),
             for (final p in filtered)
               InkWell(
                 onTap: () => setState(() { selected = p; section = 'Общие сведения'; }),
@@ -2234,19 +2169,14 @@ class _AuditPageState extends State<AuditPage> {
           const SizedBox(height: 10),
           _patientFilter(patientFilter, (value) => setState(() => patientFilter = value)),
           const SizedBox(height: 8),
-          Align(
-            alignment: Alignment.centerRight,
-            child: _ColumnSettingsButton(
-              screen: 'audit',
-              options: columns,
-              selected: visibleColumns,
-              onChanged: (value) => setState(() => visibleColumns = value),
-            ),
-          ),
           const Divider(height: 8),
           _HorizontalTable(
             child: Column(children: [
-              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), screen: 'audit'),
+              _columnHeaderRow(
+                _orderedVisibleColumns(columns, visibleColumns),
+                screen: 'audit',
+                onOrderChanged: (value) => setState(() => visibleColumns = value),
+              ),
               for (final e in events.where((e) =>
                 ('${e.$1} ${e.$2} ${e.$3} ${e.$4} ${e.$6} ${_auditPatientName(e.$3)}').toLowerCase().contains(query.toLowerCase()) &&
                 (patientFilter == 'Все пациенты' || _auditPatientName(e.$3) == patientFilter)))
