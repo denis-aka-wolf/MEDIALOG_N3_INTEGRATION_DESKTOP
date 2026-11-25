@@ -173,9 +173,10 @@ class _ColumnSettingsButton extends StatelessWidget {
                   const Text('Выберите поля, которые должны отображаться в списке.',
                     style: TextStyle(fontSize: 12, color: Color(0xFF718095))),
                   const SizedBox(height: 12),
-                  Flexible(
-                    child: SingleChildScrollView(
-                      child: Column(children: [
+                  SizedBox(
+                    height: 420,
+                    child: ListView(
+                      children: [
                         for (final option in options)
                           CheckboxListTile(
                             dense: true,
@@ -191,7 +192,7 @@ class _ColumnSettingsButton extends StatelessWidget {
                               }
                             }),
                           ),
-                      ]),
+                      ],
                     ),
                   ),
                   if (draft.isEmpty)
