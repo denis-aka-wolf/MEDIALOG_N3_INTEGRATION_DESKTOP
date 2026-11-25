@@ -501,7 +501,9 @@ class _ColumnSettingsButton extends StatelessWidget {
                     }),
                     children: [
                       for (var index = 0; index < order.length; index++)
-                        Builder(builder: (context) {
+                        Builder(
+                          key: ValueKey(order[index]),
+                          builder: (context) {
                           final key = order[index];
                           final option = options.firstWhere((item) => item.key == key);
                           final width = widths[key] ?? 180.0;
