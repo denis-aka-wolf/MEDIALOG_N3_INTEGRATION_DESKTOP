@@ -1668,7 +1668,7 @@ class _ArchivePageState extends State<ArchivePage> {
           ),
           _HorizontalTable(
             child: Column(children: [
-              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), width: columns.where((c) => visibleColumns.contains(c.key)).length * 180.0),
+              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), width: 0, screen: 'archive'),
               for (final d in filtered)
                 InkWell(
                   onTap: () => setState(() => selectedDocument = d),
@@ -1870,7 +1870,7 @@ class _IemkPageState extends State<IemkPage> {
         ),
         _HorizontalTable(
             child: Column(children: [
-            _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), width: columns.where((c) => visibleColumns.contains(c.key)).length * 180.0),
+              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), width: 0, screen: 'iemk'),
             for (final p in filtered)
               InkWell(
                 onTap: () => setState(() { selected = p; section = 'Общие сведения'; }),
@@ -2244,7 +2244,7 @@ class _AuditPageState extends State<AuditPage> {
           const Divider(height: 8),
           _HorizontalTable(
             child: Column(children: [
-              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), width: columns.where((c) => visibleColumns.contains(c.key)).length * 180.0),
+              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), width: 0, screen: 'audit'),
               for (final e in events.where((e) =>
                 (e.$1 + ' ' + e.$2 + ' ' + e.$3 + ' ' + e.$4 + ' ' + e.$6 + ' ' + _auditPatientName(e.$3)).toLowerCase().contains(query.toLowerCase()) &&
                 (patientFilter == 'Все пациенты' || _auditPatientName(e.$3) == patientFilter)))
