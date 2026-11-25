@@ -131,11 +131,11 @@ class _ColumnSettingsStore {
     return result.isEmpty ? options.map((e) => e.key).take(1).toList() : result;
   }
 
-  static double width(String key) => _widths[key] ?? 180.0;
+  static double width(String screen, String key) => _widths['$screen:$key'] ?? 180.0;
 
-  static Future<void> setWidth(String key, double value) async {
+  static Future<void> setWidth(String screen, String key, double value) async {
     await _load();
-    _widths[key] = value.clamp(90.0, 360.0);
+    _widths['$screen:$key'] = value.clamp(90.0, 360.0);
     final root = Platform.environment['APPDATA'] ??
         Platform.environment['LOCALAPPDATA'] ??
         Platform.environment['HOME'] ?? Directory.systemTemp.path;
@@ -475,8 +475,8 @@ class _ColumnSettingsButton extends StatelessWidget {
     color: const Color(0xFF60758A),
     onPressed: () async {
       final draft = selected.toSet();
-      final order = options.map((e) => e.key).toList();
-      final widths = {for (final option in options) option.key: _ColumnSettingsStore.width(option.key)};
+      final order = [...selected, ...options.map((e) => e.key).where((key) => !selected.contains(key))];
+      final widths = {for (final option in options) option.key: _ColumnSettingsStore.width(screen, option.key)};
       final result = await showDialog<({List<String> order, Map<String, double> widths})>(
         context: context,
         builder: (dialogContext) => StatefulBuilder(
@@ -562,7 +562,7 @@ class _ColumnSettingsButton extends StatelessWidget {
         try {
           await _ColumnSettingsStore.set(screen, result.order);
           for (final entry in result.widths.entries) {
-            await _ColumnSettingsStore.setWidth(entry.key, entry.value);
+            await _ColumnSettingsStore.setWidth(screen, entry.key, entry.value);
           }
           onChanged(result.order);
           if (context.mounted) {
@@ -643,23 +643,23 @@ class _HorizontalTableState extends State<_HorizontalTable> {
   );
 }
 
-double _columnWidth(_ColumnSpec column) => _ColumnSettingsStore.width(column.key);
+double _columnWidth(String screen, _ColumnSpec column) => _ColumnSettingsStore.width(screen, column.key);
 
 List<_ColumnSpec> _orderedVisibleColumns(List<_ColumnSpec> columns, List<String> order) {
   final byKey = {for (final column in columns) column.key: column};
   return [for (final key in order) if (byKey.containsKey(key)) byKey[key]!];
 }
 
-double _columnTotalWidth(List<_ColumnSpec> columns) =>
-    columns.fold(0.0, (total, column) => total + _columnWidth(column));
+double _columnTotalWidth(String screen, List<_ColumnSpec> columns) =>
+    columns.fold(0.0, (total, column) => total + _columnWidth(screen, column));
 
-Widget _columnHeaderRow(List<_ColumnSpec> columns, {required double width}) =>
+Widget _columnHeaderRow(List<_ColumnSpec> columns, {required double width, required String screen}) =>
     SizedBox(
-      width: _columnTotalWidth(columns),
+      width: _columnTotalWidth(screen, columns),
       child: Row(children: [
         for (final column in columns)
           SizedBox(
-            width: _columnWidth(column),
+            width: _columnWidth(screen, column),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
               child: Text(column.label.toUpperCase(), maxLines: 2, overflow: TextOverflow.ellipsis,
@@ -669,9 +669,9 @@ Widget _columnHeaderRow(List<_ColumnSpec> columns, {required double width}) =>
       ]),
     );
 
-Widget _columnDataRow(List<_ColumnSpec> columns, Map<String, Widget> cells, {required double width}) =>
+Widget _columnDataRow(List<_ColumnSpec> columns, Map<String, Widget> cells, {required double width, required String screen}) =>
     SizedBox(
-      width: _columnTotalWidth(columns),
+      width: _columnTotalWidth(screen, columns),
       child: Row(children: [
         for (final column in columns)
           SizedBox(
@@ -1466,7 +1466,7 @@ class _QueuePageState extends State<QueuePage> {
           ),
           _HorizontalTable(
             child: Column(children: [
-              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), width: _columnTotalWidth(_orderedVisibleColumns(columns, visibleColumns))),
+              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), width: 0, screen: 'audit'),
               for (final d in filtered)
                 InkWell(
                   onTap: () => showDialog(context: context, builder: (_) => _DocumentDialog(doc: d)),
@@ -1484,7 +1484,7 @@ class _QueuePageState extends State<QueuePage> {
                         'date': Text(d.date, style: const TextStyle(fontSize: 10, color: Color(0xFF8794A3))),
                         'status': _StatusBadge(label: d.status, type: d.type),
                       },
-                      width: columns.where((c) => visibleColumns.contains(c.key)).length * 180.0,
+                      width: 0, screen: 'queue',
                     ),
                   ),
                 ),
@@ -1686,7 +1686,7 @@ class _ArchivePageState extends State<ArchivePage> {
                         'date': Text(d.date, style: const TextStyle(fontSize: 10, color: Color(0xFF8794A3))),
                         'status': _StatusBadge(label: d.status, type: d.type),
                       },
-                      width: columns.where((c) => visibleColumns.contains(c.key)).length * 180.0,
+                      width: 0, screen: 'archive',
                     ),
                   ),
                 ),
@@ -1908,7 +1908,7 @@ class _IemkPageState extends State<IemkPage> {
                           ? const _StatusBadge(label: 'Нет', type: 0)
                           : _StatusBadge(label: p.alerts.toString(), type: 1),
                     },
-                    width: columns.where((c) => visibleColumns.contains(c.key)).length * 180.0,
+                    width: 0, screen: 'iemk',
                   ),
                 ),
               ),
@@ -2260,7 +2260,7 @@ class _AuditPageState extends State<AuditPage> {
                       'user': Text(e.$6, style: const TextStyle(fontSize: 10, color: Color(0xFF77889A))),
                       'result': _StatusBadge(label: e.$4, type: e.$5),
                     },
-                    width: columns.where((c) => visibleColumns.contains(c.key)).length * 180.0,
+                    width: 0, screen: 'audit',
                   ),
                 ),
             ]),
