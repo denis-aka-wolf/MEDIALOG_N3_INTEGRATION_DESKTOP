@@ -133,9 +133,12 @@ class _ColumnSettingsStore {
 
   static double width(String screen, String key) => _widths['$screen:$key'] ?? 180.0;
 
-  static Future<void> setWidth(String screen, String key, double value) async {
+  static Future<void> setWidths(String screen, Map<String, double> widths) async {
     await _load();
-    _widths['$screen:$key'] = value.clamp(90.0, 360.0).toDouble();
+    for (final entry in widths.entries) {
+      _widths['$screen:${entry.key}'] =
+          entry.value.clamp(90.0, 360.0).toDouble();
+    }
     final root = Platform.environment['APPDATA'] ??
         Platform.environment['LOCALAPPDATA'] ??
         Platform.environment['HOME'] ?? Directory.systemTemp.path;
@@ -561,9 +564,7 @@ class _ColumnSettingsButton extends StatelessWidget {
       if (result != null) {
         try {
           await _ColumnSettingsStore.set(screen, result.order);
-          for (final entry in result.widths.entries) {
-            await _ColumnSettingsStore.setWidth(screen, entry.key, entry.value);
-          }
+          await _ColumnSettingsStore.setWidths(screen, result.widths);
           onChanged(result.order);
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
