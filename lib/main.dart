@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui' show PointerDeviceKind;
 
 // Материал-библиотека Flutter остаётся целевой для текущей версии приложения.
 // ignore: deprecated_member_use
@@ -553,28 +554,42 @@ class _HorizontalTableState extends State<_HorizontalTable> {
   }
 
   @override
-  Widget build(BuildContext context) => Scrollbar(
-    controller: _horizontalController,
-    thumbVisibility: true,
-    trackVisibility: true,
-    interactive: true,
-    thickness: 9,
-    radius: const Radius.circular(8),
-    child: SingleChildScrollView(
+  Widget build(BuildContext context) => ScrollConfiguration(
+    behavior: ScrollConfiguration.of(context).copyWith(
+      dragDevices: {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+        PointerDeviceKind.stylus,
+      },
+    ),
+    child: Scrollbar(
       controller: _horizontalController,
-      scrollDirection: Axis.horizontal,
-      child: SizedBox(
-        height: 520,
-        child: Scrollbar(
-          controller: _verticalController,
-          thumbVisibility: true,
-          trackVisibility: true,
-          interactive: true,
-          thickness: 9,
-          radius: const Radius.circular(8),
-          child: SingleChildScrollView(
+      thumbVisibility: true,
+      trackVisibility: true,
+      interactive: true,
+      thickness: 12,
+      radius: const Radius.circular(8),
+      notificationPredicate: (notification) => notification.depth == 0,
+      child: SingleChildScrollView(
+        controller: _horizontalController,
+        scrollDirection: Axis.horizontal,
+        primary: false,
+        child: SizedBox(
+          height: 520,
+          child: Scrollbar(
             controller: _verticalController,
-            child: widget.child,
+            thumbVisibility: true,
+            trackVisibility: true,
+            interactive: true,
+            thickness: 10,
+            radius: const Radius.circular(8),
+            notificationPredicate: (notification) => notification.depth == 0,
+            child: SingleChildScrollView(
+              controller: _verticalController,
+              primary: false,
+              child: widget.child,
+            ),
           ),
         ),
       ),
