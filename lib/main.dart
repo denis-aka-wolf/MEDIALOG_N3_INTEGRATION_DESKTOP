@@ -1757,7 +1757,7 @@ class _ArchivePageState extends State<ArchivePage> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Column(children: [
-              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: 5200),
+              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: columns.where((c) => visibleColumns.contains(c.key)).length * 150.0),
               for (final d in filtered)
                 InkWell(
                   onTap: () => setState(() => selectedDocument = d),
@@ -1775,7 +1775,7 @@ class _ArchivePageState extends State<ArchivePage> {
                         'date': Text(d.date, style: const TextStyle(fontSize: 10, color: Color(0xFF8794A3))),
                         'status': _StatusBadge(label: d.status, type: d.type),
                       },
-                      width: 5200,
+                      width: columns.where((c) => visibleColumns.contains(c.key)).length * 150.0,
                     ),
                   ),
                 ),
@@ -1950,7 +1950,7 @@ class _IemkPageState extends State<IemkPage> {
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Column(children: [
-            _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: 5200),
+            _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: columns.where((c) => visibleColumns.contains(c.key)).length * 150.0),
             for (final p in filtered)
               InkWell(
                 onTap: () => setState(() { selected = p; section = 'Общие сведения'; }),
@@ -1988,7 +1988,7 @@ class _IemkPageState extends State<IemkPage> {
                           ? const _StatusBadge(label: 'Нет', type: 0)
                           : _StatusBadge(label: p.alerts.toString(), type: 1),
                     },
-                    width: 5200,
+                    width: columns.where((c) => visibleColumns.contains(c.key)).length * 150.0,
                   ),
                 ),
               ),
@@ -2316,7 +2316,7 @@ class _AuditPageState extends State<AuditPage> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Column(children: [
-              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: 5200),
+              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: columns.where((c) => visibleColumns.contains(c.key)).length * 150.0),
               for (final e in events.where((e) =>
                 (e.$1 + ' ' + e.$2 + ' ' + e.$3 + ' ' + e.$4 + ' ' + e.$6 + ' ' + _auditPatientName(e.$3)).toLowerCase().contains(query.toLowerCase()) &&
                 (patientFilter == 'Все пациенты' || _auditPatientName(e.$3) == patientFilter)))
@@ -2332,7 +2332,7 @@ class _AuditPageState extends State<AuditPage> {
                       'user': Text(e.$6, style: const TextStyle(fontSize: 10, color: Color(0xFF77889A))),
                       'result': _StatusBadge(label: e.$4, type: e.$5),
                     },
-                    width: 5200,
+                    width: columns.where((c) => visibleColumns.contains(c.key)).length * 150.0,
                   ),
                 ),
             ]),
