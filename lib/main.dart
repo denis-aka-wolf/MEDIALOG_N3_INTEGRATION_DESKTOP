@@ -533,6 +533,25 @@ class _ColumnSettingsButton extends StatelessWidget {
   );
 }
 
+class _HorizontalTable extends StatefulWidget {
+  final Widget child;
+  const _HorizontalTable({required this.child});
+  @override
+  State<_HorizontalTable> createState() => _HorizontalTableState();
+}
+class _HorizontalTableState extends State<_HorizontalTable> {
+  final ScrollController _controller = ScrollController();
+  @override
+  void dispose() { _controller.dispose(); super.dispose(); }
+  @override
+  Widget build(BuildContext context) => Scrollbar(
+    controller: _controller, thumbVisibility: true, trackVisibility: true,
+    interactive: true, thickness: 9, radius: const Radius.circular(8),
+    child: SingleChildScrollView(controller: _controller,
+      scrollDirection: Axis.horizontal, child: widget.child),
+  );
+}
+
 Widget _columnHeaderRow(List<_ColumnSpec> columns, {required double width}) =>
     SizedBox(
       width: width,
@@ -833,22 +852,25 @@ class _PageHost extends StatelessWidget {
   }
 }
 
-class _PagePadding extends StatelessWidget {
+class _PagePadding extends StatefulWidget {
   final Widget child;
   const _PagePadding({required this.child});
-
   @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
+  State<_PagePadding> createState() => _PagePaddingState();
+}
+class _PagePaddingState extends State<_PagePadding> {
+  final ScrollController _controller = ScrollController();
+  @override
+  void dispose() { _controller.dispose(); super.dispose(); }
+  @override
+  Widget build(BuildContext context) => Scrollbar(
+    controller: _controller, thumbVisibility: true, trackVisibility: true,
+    interactive: true, thickness: 9, radius: const Radius.circular(8),
+    child: SingleChildScrollView(controller: _controller,
       padding: const EdgeInsets.all(28),
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1440),
-          child: child,
-        ),
-      ),
-    );
-  }
+      child: Center(child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1440), child: widget.child))),
+  );
 }
 
 class DashboardPage extends StatelessWidget {
@@ -1249,7 +1271,7 @@ class _QueuePageState extends State<QueuePage> {
     });
   }
 
-  final docs = const [
+  final docs = <_Doc>[
     _Doc('MED-001258', 'Протокол консультации', 'Смирнова Н.В.', 'Алексеева Мария Викторовна', 'ЭМК-00018452', '23.11.2026 11:18', 'Готов к отправке', 0),
     _Doc('MED-001257', 'Протокол лабораторного исследования', 'Орлова М.Д.', 'Белов Андрей Сергеевич', 'ЭМК-00018451', '23.11.2026 11:12', 'Ожидает проверки', 1),
     _Doc('MED-001256', 'Выписной эпикриз', 'Петрова А.С.', 'Васильева Елена Павловна', 'ЭМК-00018450', '23.11.2026 11:05', 'Ошибка CDA', 2),
@@ -1268,7 +1290,16 @@ class _QueuePageState extends State<QueuePage> {
     _Doc('MED-001243', 'Протокол лабораторного исследования', 'Сидоров П.П.', 'Романов Кирилл Денисович', 'ЭМК-00018437', '23.11.2026 09:48', 'Ошибка CDA', 2),
     _Doc('MED-001242', 'Направление', 'Иванов И.И.', 'Соколова Марина Юрьевна', 'ЭМК-00018436', '23.11.2026 09:41', 'Готов к отправке', 0),
     _Doc('MED-001241', 'Справка', 'Кузнецова Е.В.', 'Тихонов Алексей Борисович', 'ЭМК-00018435', '23.11.2026 09:35', 'Ошибка УКЭП', 2),
-    _Doc('MED-001240', 'Протокол инструментального исследования', 'Петрова А.С.', 'Фёдорова Дарья Константиновна', 'ЭМК-00018434', '23.11.2026 09:28', 'Готов к отправке', 0),
+    _Doc('MED-001240', 'Протокол инструментального исследования', 'Петрова А.С.', 'Фёдорова Дарья Константиновна', 'ЭМК-00018434', '23.11.2026 09:28', 'Готов к отправке', 0),    for (var i = 0; i < 80; i++)
+      _Doc('MED-${(1239-i).toString().padLeft(6,'0')}',
+        const ['Протокол осмотра','Протокол консультации','Лабораторное исследование','Направление'][i%4],
+        const ['Иванов И.И.','Смирнова Н.В.','Петрова А.С.','Кузнецова Е.В.'][i%4],
+        _patientFilterOptions[(i%(_patientFilterOptions.length-1))+1],
+        'ЭМК-${(18433-i).toString().padLeft(8,'0')}',
+        '22.11.2026 ${(8+i%12).toString().padLeft(2,'0')}:${(i*7%60).toString().padLeft(2,'0')}',
+        const ['Готов к отправке','Ожидает проверки','Ошибка CDA','Ожидает подписи'][i%4],
+        i%4==0 ? 0 : i%4==1 ? 1 : 2),
+
   ];
 
   @override
@@ -1331,10 +1362,9 @@ class _QueuePageState extends State<QueuePage> {
               ),
             ),
           ),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
+          _HorizontalTable(
             child: Column(children: [
-              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: columns.where((c) => visibleColumns.contains(c.key)).length * 150.0),
+              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: columns.where((c) => visibleColumns.contains(c.key)).length * 180.0),
               for (final d in filtered)
                 InkWell(
                   onTap: () => showDialog(context: context, builder: (_) => _DocumentDialog(doc: d)),
@@ -1352,7 +1382,7 @@ class _QueuePageState extends State<QueuePage> {
                         'date': Text(d.date, style: const TextStyle(fontSize: 10, color: Color(0xFF8794A3))),
                         'status': _StatusBadge(label: d.status, type: d.type),
                       },
-                      width: columns.where((c) => visibleColumns.contains(c.key)).length * 150.0,
+                      width: columns.where((c) => visibleColumns.contains(c.key)).length * 180.0,
                     ),
                   ),
                 ),
@@ -1479,7 +1509,7 @@ class _ArchivePageState extends State<ArchivePage> {
     });
   }
 
-  static const documents = [
+  static final documents = <_Doc>[
     _Doc('MED-001258', 'Протокол консультации', 'Смирнова Н.В.', 'Алексеева Мария Викторовна', 'ЭМК-00018452', '23.11.2026 11:18', 'Зарегистрирован', 0),
     _Doc('MED-001255', 'Протокол осмотра', 'Иванов И.И.', 'Громов Дмитрий Олегович', 'ЭМК-00018449', '23.11.2026 10:58', 'Зарегистрирован', 0),
     _Doc('MED-001254', 'Протокол инструментального исследования', 'Кузнецова Е.В.', 'Демидова Наталья Игоревна', 'ЭМК-00018448', '23.11.2026 10:51', 'Ожидает регистрации', 1),
@@ -1487,7 +1517,15 @@ class _ArchivePageState extends State<ArchivePage> {
     _Doc('MED-001252', 'Справка', 'Орлова М.Д.', 'Жукова Ольга Николаевна', 'ЭМК-00018446', '23.11.2026 10:43', 'Ошибка обработки', 2),
     _Doc('MED-001250', 'Протокол лабораторного исследования', 'Петрова А.С.', 'Ильина Татьяна Сергеевна', 'ЭМК-00018444', '23.11.2026 10:34', 'Зарегистрирован', 0),
     _Doc('MED-001249', 'Выписной эпикриз', 'Кузнецова Е.В.', 'Крылов Артём Евгеньевич', 'ЭМК-00018443', '23.11.2026 10:29', 'Ожидает регистрации', 1),
-    _Doc('MED-001245', 'Протокол осмотра', 'Иванов И.И.', 'Осипов Владимир Михайлович', 'ЭМК-00018439', '23.11.2026 10:02', 'Зарегистрирован', 0),
+    _Doc('MED-001245', 'Протокол осмотра', 'Иванов И.И.', 'Осипов Владимир Михайлович', 'ЭМК-00018439', '23.11.2026 10:02', 'Зарегистрирован', 0),    for (var i = 0; i < 60; i++)
+      _Doc('ARC-${(1001+i).toString().padLeft(6,'0')}',
+        const ['Протокол осмотра','Протокол консультации','Лабораторное исследование','Выписной эпикриз'][i%4],
+        const ['Иванов И.И.','Смирнова Н.В.','Петрова А.С.','Кузнецова Е.В.'][i%4],
+        _patientFilterOptions[(i%(_patientFilterOptions.length-1))+1],
+        'ЭМК-${(18433-i).toString().padLeft(8,'0')}',
+        '21.11.2026 ${(8+i%12).toString().padLeft(2,'0')}:${(i*5%60).toString().padLeft(2,'0')}',
+        const ['Зарегистрирован','Ожидает регистрации','Ошибка обработки'][i%3], i%3),
+
   ];
 
   static const files = [
@@ -1542,10 +1580,9 @@ class _ArchivePageState extends State<ArchivePage> {
               ),
             ),
           ),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
+          _HorizontalTable(
             child: Column(children: [
-              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: columns.where((c) => visibleColumns.contains(c.key)).length * 150.0),
+              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: columns.where((c) => visibleColumns.contains(c.key)).length * 180.0),
               for (final d in filtered)
                 InkWell(
                   onTap: () => setState(() => selectedDocument = d),
@@ -1563,7 +1600,7 @@ class _ArchivePageState extends State<ArchivePage> {
                         'date': Text(d.date, style: const TextStyle(fontSize: 10, color: Color(0xFF8794A3))),
                         'status': _StatusBadge(label: d.status, type: d.type),
                       },
-                      width: columns.where((c) => visibleColumns.contains(c.key)).length * 150.0,
+                      width: columns.where((c) => visibleColumns.contains(c.key)).length * 180.0,
                     ),
                   ),
                 ),
@@ -1680,12 +1717,22 @@ class _IemkPageState extends State<IemkPage> {
     });
   }
 
-  static const patients = [
+  static final patients = <_IemkPatient>[
     _IemkPatient('PAT-00018452', 'Алексеева Мария Викторовна', '14.06.1987', 'Женский', '4520 1845 2291 0048', 'ЭМК-00018452', 'г. Москва, ул. Новая, д. 18', '+7 (900) 123-45-67', 18, 1),
     _IemkPatient('PAT-00018449', 'Громов Дмитрий Олегович', '02.11.1975', 'Мужской', '4520 1844 9001 7732', 'ЭМК-00018449', 'г. Москва, ул. Садовая, д. 7', '+7 (900) 222-18-49', 12, 0),
     _IemkPatient('PAT-00018448', 'Демидова Наталья Игоревна', '23.03.1992', 'Женский', '4520 1844 8001 6521', 'ЭМК-00018448', 'г. Москва, пр-т Мира, д. 31', '+7 (900) 333-18-48', 9, 2),
     _IemkPatient('PAT-00018447', 'Егоров Михаил Андреевич', '09.09.1968', 'Мужской', '4520 1844 7001 4982', 'ЭМК-00018447', 'г. Москва, ул. Лесная, д. 4', '+7 (900) 444-18-47', 24, 0),
-    _IemkPatient('PAT-00018446', 'Жукова Ольга Николаевна', '17.01.1981', 'Женский', '4520 1844 6001 3819', 'ЭМК-00018446', 'г. Москва, ул. Полевая, д. 12', '+7 (900) 555-18-46', 7, 1),
+    _IemkPatient('PAT-00018446', 'Жукова Ольга Николаевна', '17.01.1981', 'Женский', '4520 1844 6001 3819', 'ЭМК-00018446', 'г. Москва, ул. Полевая, д. 12', '+7 (900) 555-18-46', 7, 1),    for (var i = 0; i < 60; i++)
+      _IemkPatient('PAT-TEST-${(i+1).toString().padLeft(4,'0')}',
+        _patientFilterOptions[(i%(_patientFilterOptions.length-1))+1],
+        '${(i%28+1).toString().padLeft(2,'0')}.${(i%12+1).toString().padLeft(2,'0')}.${1960+i%40}',
+        i.isEven ? 'Женский' : 'Мужской',
+        '4520 ${1800+i} ${1000+i} ${7000+i}',
+        'ЭМК-${(18300-i).toString().padLeft(8,'0')}',
+        'г. Москва, ул. Тестовая, д. ${i+1}',
+        '+7 (900) ${100+i}-18-${(10+i%90).toString().padLeft(2,'0')}',
+        3+i%28, i%4==0 ? 2 : i%3),
+
   ];
 
   static const history = [
@@ -1735,10 +1782,9 @@ class _IemkPageState extends State<IemkPage> {
             ),
           ),
         ),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Column(children: [
-            _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: columns.where((c) => visibleColumns.contains(c.key)).length * 150.0),
+        _HorizontalTable(
+            child: Column(children: [
+            _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: columns.where((c) => visibleColumns.contains(c.key)).length * 180.0),
             for (final p in filtered)
               InkWell(
                 onTap: () => setState(() { selected = p; section = 'Общие сведения'; }),
@@ -1776,7 +1822,7 @@ class _IemkPageState extends State<IemkPage> {
                           ? const _StatusBadge(label: 'Нет', type: 0)
                           : _StatusBadge(label: p.alerts.toString(), type: 1),
                     },
-                    width: columns.where((c) => visibleColumns.contains(c.key)).length * 150.0,
+                    width: columns.where((c) => visibleColumns.contains(c.key)).length * 180.0,
                   ),
                 ),
               ),
@@ -2060,7 +2106,7 @@ class _AuditPageState extends State<AuditPage> {
 
   @override
   Widget build(BuildContext context) {
-    const events = [
+    final events = [
       ('11:18:42', 'Формирование СЭМД', 'MED-001258', 'Успешно', 0, 'Оператор'),
       ('11:18:31', 'Проверка ФРМР', 'MED-001258', 'Успешно', 0, 'Система'),
       ('11:17:58', 'Проверка сертификата врача', 'MED-001258', 'Успешно', 0, 'Система'),
@@ -2073,6 +2119,13 @@ class _AuditPageState extends State<AuditPage> {
       ('10:43:51', 'Проверка ФРМО', 'MED-001252', 'Успешно', 0, 'Система'),
       ('10:41:26', 'Проверка УКЭП врача', 'MED-001252', 'Ошибка', 2, 'Система'),
       ('10:35:02', 'Обновление шаблона СЭМД', 'TPL-00008', 'Изменено', 1, 'Администратор'),
+      for (var i = 0; i < 88; i++)
+        ('${(9+i%3).toString().padLeft(2,'0')}:${(i*7%60).toString().padLeft(2,'0')}:${(i*11%60).toString().padLeft(2,'0')}',
+          const ['Формирование СЭМД','Проверка ФРМО','Проверка ФРМР','Валидация CDA','Постановка в очередь'][i%5],
+          'MED-${(1258-i%19).toString().padLeft(6,'0')}',
+          const ['Успешно','Ожидание','Ошибка'][i%3], i%3,
+          const ['Оператор','Система','Администратор'][i%3]),
+
     ];
     return _PagePadding(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -2103,10 +2156,9 @@ class _AuditPageState extends State<AuditPage> {
             ),
           ),
           const Divider(height: 8),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
+          _HorizontalTable(
             child: Column(children: [
-              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: columns.where((c) => visibleColumns.contains(c.key)).length * 150.0),
+              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: columns.where((c) => visibleColumns.contains(c.key)).length * 180.0),
               for (final e in events.where((e) =>
                 (e.$1 + ' ' + e.$2 + ' ' + e.$3 + ' ' + e.$4 + ' ' + e.$6 + ' ' + _auditPatientName(e.$3)).toLowerCase().contains(query.toLowerCase()) &&
                 (patientFilter == 'Все пациенты' || _auditPatientName(e.$3) == patientFilter)))
@@ -2122,7 +2174,7 @@ class _AuditPageState extends State<AuditPage> {
                       'user': Text(e.$6, style: const TextStyle(fontSize: 10, color: Color(0xFF77889A))),
                       'result': _StatusBadge(label: e.$4, type: e.$5),
                     },
-                    width: columns.where((c) => visibleColumns.contains(c.key)).length * 150.0,
+                    width: columns.where((c) => visibleColumns.contains(c.key)).length * 180.0,
                   ),
                 ),
             ]),
