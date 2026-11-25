@@ -593,7 +593,7 @@ Widget _columnHeaderRow(
                     onHorizontalDragUpdate: (details) {
                       final nextWidth = (_columnWidth(screen, columns[index]) +
                               details.delta.dx)
-                          .clamp(90.0, 520.0)
+                          .clamp(90.0, 360.0)
                           .toDouble();
                       _ColumnSettingsStore._widths['$screen:${columns[index].key}'] = nextWidth;
                       _columnLayoutRevision.value++;
