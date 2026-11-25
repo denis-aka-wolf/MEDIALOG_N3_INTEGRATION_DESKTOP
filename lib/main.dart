@@ -535,10 +535,12 @@ Widget _columnHeaderRow(
   List<_ColumnSpec> columns, {
   required String screen,
   required ValueChanged<List<String>> onOrderChanged,
-}) => SizedBox(
-  width: _columnTotalWidth(screen, columns),
-  height: 54,
-  child: ReorderableListView(
+}) => ValueListenableBuilder<int>(
+  valueListenable: _columnLayoutRevision,
+  builder: (context, revision, child) => SizedBox(
+    width: _columnTotalWidth(screen, columns),
+    height: 54,
+    child: ReorderableListView(
     scrollDirection: Axis.horizontal,
     shrinkWrap: true,
     physics: const NeverScrollableScrollPhysics(),
@@ -620,6 +622,7 @@ Widget _columnHeaderRow(
           ),
         ),
     ],
+    ),
   ),
 );
 
