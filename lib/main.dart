@@ -496,7 +496,6 @@ class _ColumnSettingsButton extends StatelessWidget {
                   child: ReorderableListView(
                     buildDefaultDragHandles: false,
                     onReorderItem: (oldIndex, newIndex) => setDialogState(() {
-                      if (newIndex > oldIndex) newIndex -= 1;
                       final item = order.removeAt(oldIndex);
                       order.insert(newIndex, item);
                     }),
@@ -2070,13 +2069,13 @@ class _IemkPageState extends State<IemkPage> {
     ]))),
     const SizedBox(height: 12),
     const Card(child: Column(children: [
-      const ListTile(title: Text('Контроль расхождений', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
+      ListTile(title: Text('Контроль расхождений', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800)),
         subtitle: Text('Сопоставление идентификаторов и атрибутов пациента', style: TextStyle(fontSize: 10))),
-      const Divider(height: 1),
-      const ListTile(leading: Icon(Icons.check_circle_outline, color: Color(0xFF269B77)),
+      Divider(height: 1),
+      ListTile(leading: Icon(Icons.check_circle_outline, color: Color(0xFF269B77)),
         title: Text('ФИО и дата рождения', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
         subtitle: Text('Совпадение демонстрационных данных', style: TextStyle(fontSize: 10))),
-      const ListTile(leading: Icon(Icons.warning_amber_rounded, color: Color(0xFFD99A2B)),
+      ListTile(leading: Icon(Icons.warning_amber_rounded, color: Color(0xFFD99A2B)),
         title: Text('Внешний идентификатор пациента', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
         subtitle: Text('Нужна проверка соответствия при подключении N3.Health', style: TextStyle(fontSize: 10))),
     ])),
@@ -2087,14 +2086,14 @@ class _IemkPageState extends State<IemkPage> {
       icon: const Icon(Icons.compare_arrows, size: 16), label: const Text('Проверить сопоставление'))),
   ]);
 
-  Widget _referralsView() => const Card(child: Padding(padding: const EdgeInsets.all(20),
+  Widget _referralsView() => const Card(child: Padding(padding: EdgeInsets.all(20),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const _CardTitle(title: 'Направления', subtitle: 'Направления на консультации и исследования'),
-      const SizedBox(height: 14),
-      const ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.assignment_outlined, color: Color(0xFF47799E)),
+      _CardTitle(title: 'Направления', subtitle: 'Направления на консультации и исследования'),
+      SizedBox(height: 14),
+      ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.assignment_outlined, color: Color(0xFF47799E)),
         title: Text('Направление на консультацию кардиолога', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
         subtitle: Text('04.11.2026 · Ожидает регистрации', style: TextStyle(fontSize: 10))),
-      const ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.assignment_outlined, color: Color(0xFF47799E)),
+      ListTile(contentPadding: EdgeInsets.zero, leading: Icon(Icons.assignment_outlined, color: Color(0xFF47799E)),
         title: Text('Направление на лабораторное исследование', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
         subtitle: Text('18.10.2026 · Зарегистрировано', style: TextStyle(fontSize: 10))),
     ])));
