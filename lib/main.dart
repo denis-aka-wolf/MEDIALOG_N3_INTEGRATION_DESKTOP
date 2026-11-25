@@ -540,15 +540,43 @@ class _HorizontalTable extends StatefulWidget {
   State<_HorizontalTable> createState() => _HorizontalTableState();
 }
 class _HorizontalTableState extends State<_HorizontalTable> {
-  final ScrollController _controller = ScrollController();
+  final ScrollController _horizontalController = ScrollController();
+  final ScrollController _verticalController = ScrollController();
+
   @override
-  void dispose() { _controller.dispose(); super.dispose(); }
+  void dispose() {
+    _horizontalController.dispose();
+    _verticalController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) => Scrollbar(
-    controller: _controller, thumbVisibility: true, trackVisibility: true,
-    interactive: true, thickness: 9, radius: const Radius.circular(8),
-    child: SingleChildScrollView(controller: _controller,
-      scrollDirection: Axis.horizontal, child: widget.child),
+    controller: _horizontalController,
+    thumbVisibility: true,
+    trackVisibility: true,
+    interactive: true,
+    thickness: 9,
+    radius: const Radius.circular(8),
+    child: SingleChildScrollView(
+      controller: _horizontalController,
+      scrollDirection: Axis.horizontal,
+      child: SizedBox(
+        height: 520,
+        child: Scrollbar(
+          controller: _verticalController,
+          thumbVisibility: true,
+          trackVisibility: true,
+          interactive: true,
+          thickness: 9,
+          radius: const Radius.circular(8),
+          child: SingleChildScrollView(
+            controller: _verticalController,
+            child: widget.child,
+          ),
+        ),
+      ),
+    ),
   );
 }
 
