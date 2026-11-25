@@ -654,7 +654,7 @@ List<_ColumnSpec> _orderedVisibleColumns(List<_ColumnSpec> columns, List<String>
 double _columnTotalWidth(String screen, List<_ColumnSpec> columns) =>
     columns.fold(0.0, (total, column) => total + _columnWidth(screen, column));
 
-Widget _columnHeaderRow(List<_ColumnSpec> columns, {required double width, required String screen}) =>
+Widget _columnHeaderRow(List<_ColumnSpec> columns, {required String screen}) =>
     SizedBox(
       width: _columnTotalWidth(screen, columns),
       child: Row(children: [
@@ -670,7 +670,7 @@ Widget _columnHeaderRow(List<_ColumnSpec> columns, {required double width, requi
       ]),
     );
 
-Widget _columnDataRow(List<_ColumnSpec> columns, Map<String, Widget> cells, {required double width, required String screen}) =>
+Widget _columnDataRow(List<_ColumnSpec> columns, Map<String, Widget> cells, {required String screen}) =>
     SizedBox(
       width: _columnTotalWidth(screen, columns),
       child: Row(children: [
@@ -1467,7 +1467,7 @@ class _QueuePageState extends State<QueuePage> {
           ),
           _HorizontalTable(
             child: Column(children: [
-              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), width: 0, screen: 'queue'),
+              _columnHeaderRow(_orderedVisibleColumns(columns, visibleColumns), screen: 'queue'),
               for (final d in filtered)
                 InkWell(
                   onTap: () => showDialog(context: context, builder: (_) => _DocumentDialog(doc: d)),
@@ -1485,7 +1485,7 @@ class _QueuePageState extends State<QueuePage> {
                         'date': Text(d.date, style: const TextStyle(fontSize: 10, color: Color(0xFF8794A3))),
                         'status': _StatusBadge(label: d.status, type: d.type),
                       },
-                      width: 0, screen: 'queue',
+                      screen: 'queue',
                     ),
                   ),
                 ),
@@ -1687,7 +1687,7 @@ class _ArchivePageState extends State<ArchivePage> {
                         'date': Text(d.date, style: const TextStyle(fontSize: 10, color: Color(0xFF8794A3))),
                         'status': _StatusBadge(label: d.status, type: d.type),
                       },
-                      width: 0, screen: 'archive',
+                      screen: 'archive',
                     ),
                   ),
                 ),
