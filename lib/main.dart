@@ -132,11 +132,512 @@ class _ColumnSettingsStore {
   }
 }
 
+
+const _patientFieldMetadata = <String>[
+'PATIENTS_ID',
+'EMK_SINHRO',
+'MEDECINS_MODIFY_ID',
+'CREATE_DATE_TIME',
+'MODIFY_DATE_TIME',
+'DERN_CONS',
+'PL_SUBJ_ID',
+'PL_PATGR_ID',
+'AGE',
+'SV_LAB',
+'SV_LAF',
+'F_PRINCPERC',
+'C_COMP',
+'F_PERC',
+'IMC',
+'SIGEMS_IPP',
+'MEDECIN_REFERENT',
+'DUP_CHECK_DATE',
+'LPU_CLINK_PATIENTS',
+'PASPORT_LPU_FM_ORG_ID',
+'ORGANIZACIYA_MESTO_RABOTY',
+'N_OMON',
+'NOMER_MEDICISKOJ_KART',
+'NOM',
+'PRENOM',
+'PATRONYME',
+'FIO',
+'POL',
+'NE_LE',
+'FM_ORG_ID',
+'VES',
+'ROST',
+'PROIS_OGDENIE',
+'MEDECINS_CREATE_ID',
+'DOSSIER_EXIT',
+'DATA_SMERTI',
+'ARCHIVE',
+'ALSAC',
+'N_OMON_CHILD',
+'GOD_ROGDENIQ',
+'EMAIL',
+'MMK',
+'DUBL_NOMERA',
+'SHETHIK_MEDKART',
+'DLQ_MAKROSA_MEDKART',
+'NOMER_POMS',
+'SERIQ_POMS',
+'OMS',
+'VID_OMS',
+'PRIZNAK_OMS_MOSKVA',
+'PRIZNAK_OMS_REGION',
+'BYDGET',
+'VID_BYDGETA',
+'PLATN_J',
+'DMS',
+'VID_DMS',
+'GITEL_GORODA_SELA',
+'PROPISKA',
+'INDEKS',
+'STRANA1',
+'STRANA',
+'KOD_TERRITORII',
+'OBLAST',
+'RAJON_ROSSII',
+'RAJON',
+'KOD_NASELENNOGO_PUNKTA',
+'OBLAST_GOROD',
+'NASELENN_J_PUNKT',
+'RAYON_GORODA',
+'ULICA_MOSKVA1',
+'ULICA_MOSKVA',
+'ULICA',
+'DOM',
+'KORPUS',
+'STROENIE',
+'KVARTIRA',
+'POD_EZD',
+'ETAG',
+'KOD_DOMOFON',
+'ADRES_PO_PROPISKE',
+'ADRES_FAKTIHESKIJ',
+'TEL',
+'MOBIL_TELEFON',
+'SNILS',
+'ISTOHNIK_FINANSIROVANIQ',
+'DOKUMENT_UDOSTOVERQYHIJ_P',
+'DOKUMENT_L_GOTA',
+'KOGDA_V_DAN_L_GOTA',
+'KEM_V_DAN_L_GOTA',
+'DOKUMENT_O_L_GOTE',
+'INVALIDNOST',
+'STEPEN_INVALIDNOSTI',
+'DISPANSERNAQ_GRUPPA',
+'DATA_POSTANOVKI_NA_UHET',
+'DATA_SNQTIQ_S_UHETA',
+'NOMER_LPU',
+'UHASTOK',
+'INOSTRANN_J_GRAGDANIN',
+'GRAGDANSTVO',
+'NACIONAL_NOST',
+'VID_DOKUMENTA',
+'SERIQ_DOKUMENTA',
+'PASPORT_N',
+'KOGDA_V_DAN',
+'KEM_V_DAN',
+'UDOSTOVERENIE_LIHNOSTI',
+'OTHESTVO_RODITELQ',
+'IMQ_RODITELQ',
+'FAMILIQ_RODITELQ',
+'DOKUMENT_RODITELQ',
+'PORQDKOV_J_NOMER_REBENKA',
+'DOKUMENT_V_ROLI_POLISA',
+'SOCIAL_N_J_STATUS',
+'SOCIAL_N_J_STATUS1',
+'RABOTA1',
+'RABOTA',
+'DOLGNOST',
+'RAB_TEL',
+'FAKS',
+'PRIMEHANIE',
+'KATEGORIQ',
+'APTEHNAQ_KATEGORIQ',
+'KATEGORIQ_L_GOTNOSTI',
+'GOSPITALIZIROVAN',
+'ISTORIYA_RODOV',
+'TERAPEVT',
+'NAPRAVLENIE',
+'NAPRAVLENIE_S',
+'NAPRAVLENIE_PO',
+'PRIZNAK_DVIGENIQ',
+'NOMER_KMS',
+'SERIQ_KMS',
+'SOCIAL_NAQ_GRUPPA_DLQ_089',
+'KATEGORIIQ_BOL_NOGO_DLQ_0',
+'DETSKOE_UHREGDENIE',
+'PRIZYVNIK',
+'REG',
+'SOGLASIE_POLUCHENO',
+'SUPRUG',
+'KOD_DONORA',
+'NOT_IDENTIFIED',
+'WEB_PLANNING_LOCKED',
+'KARTA_V_ARHIVE',
+'NOT_SEND_SMS',
+'NOT_SEND_MAILING_SMS',
+'KATEGORIQ_L_GOT',
+'FIO_TRENERA',
+'TEL_TRENERA',
+'FIO_SPORTIVNOGO_VRACHA',
+'TEL_SPORTIVNOGO_VRACHA',
+'SPORTIVNYY_RAZRYAD',
+'SOSTAV',
+'E_MAIL',
+'SEMEYNOE_POLOZHENIE',
+'NALICHIE_DETEY',
+'SPORTIVNYY_VRACH',
+'OBRAZOVANIE',
+'KLASS_SHKOLY',
+'MESTO_RABOTY_ADRES',
+'PROFESSIYA',
+'NAZVANIE_LECHEBNOGO_UCHRE',
+'ADRES_LECHEBNOGO_UCHREZHD',
+'SEZONNOST_SPORTA',
+'PLACE_OF_BIRTH_COUNTRY',
+'PLACE_OF_BIRTH_OBLAST',
+'PLACE_OF_BIRTH_REGION',
+'PLACE_OF_BIRTH_CITY',
+'PLACE_OF_BIRTH_COUNTRY_TE',
+'PLACE_OF_BIRTH_REGION_TEX',
+'PLACE_OF_BIRTH_CITY_TEXT',
+'TESTOVYY_PACIENT',
+'LPU_PRIKREPLENIYA',
+'NET_V_KLADRE',
+'VTOROE_MESTO_RABOTY',
+'DOLZHNOST_VTORAYA_',
+'ADDRESS_SMO',
+'PODRAZDELENIE',
+'kontingent_str',
+'PROFESSIYA_SSYLKA_',
+'NUMERO_MEDTR',
+'C_PRINC',
+'AGE_AUTO',
+'MEDECINS_ID',
+'KRN_CREATE_DATE',
+'KRN_CREATE_USER_ID',
+'KRN_MODIFY_DATE',
+'KRN_MODIFY_USER_ID',
+'KRN_CREATE_DATABASE_ID',
+'KRN_MODIFY_DATABASE_ID',
+'KRN_GUID',
+'Date_LPU_clink',
+'DATE_LAST_MED_EXAMS',
+'PAT_1C_ID',
+'sms_consent',
+'MSS_ID_CARD',
+'CHLEN_SEM_I_1',
+'CHLEN_SEM_I_2',
+'ANALIZY_PO_EMAIL',
+'SOTRUDNIK',
+'NOMER_SAN',
+'SURNAME_IO',
+'VYDANO_IDS',
+'ISTOCHNIK_INFORMIROVANIYA',
+'ISTOCHNIK',
+'ISTOCHNIK_INFORMIROVANIYA_GCM',
+'KOD_PODRAZDELENIYA',
+'KOD_PODRAZDELENIYA_PASPOR',
+'INN',
+'PROVERKA'
+];
+
+final _patientColumns = <_ColumnSpec>[
+  _ColumnSpec('PATIENTS_ID', 'ID записи пациента · int', 2),
+  _ColumnSpec('EMK_SINHRO', 'EMK_SINHRO · bit', 2),
+  _ColumnSpec('MEDECINS_MODIFY_ID', 'MEDECINS_MODIFY_ID · int', 2),
+  _ColumnSpec('CREATE_DATE_TIME', 'Дата создания ЭМК · datetime', 2),
+  _ColumnSpec('MODIFY_DATE_TIME', 'MODIFY_DATE_TIME · datetime', 2),
+  _ColumnSpec('DERN_CONS', 'DERN_CONS · datetime', 2),
+  _ColumnSpec('PL_SUBJ_ID', 'PL_SUBJ_ID · int', 2),
+  _ColumnSpec('PL_PATGR_ID', 'PL_PATGR_ID · int', 2),
+  _ColumnSpec('AGE', 'AGE · numeric', 2),
+  _ColumnSpec('SV_LAB', 'SV_LAB · text', 2),
+  _ColumnSpec('SV_LAF', 'SV_LAF · text', 2),
+  _ColumnSpec('F_PRINCPERC', 'F_PRINCPERC · numeric', 2),
+  _ColumnSpec('C_COMP', 'C_COMP · int', 2),
+  _ColumnSpec('F_PERC', 'F_PERC · numeric', 2),
+  _ColumnSpec('IMC', 'IMC · numeric', 2),
+  _ColumnSpec('SIGEMS_IPP', 'SIGEMS_IPP · int', 2),
+  _ColumnSpec('MEDECIN_REFERENT', 'MEDECIN_REFERENT · bit', 2),
+  _ColumnSpec('DUP_CHECK_DATE', 'Дата проверки дублей · datetime', 2),
+  _ColumnSpec('LPU_CLINK_PATIENTS', 'ЛПУ прикрепления · int', 2),
+  _ColumnSpec('PASPORT_LPU_FM_ORG_ID', 'PASPORT_LPU_FM_ORG_ID · int', 2),
+  _ColumnSpec('ORGANIZACIYA_MESTO_RABOTY', 'ORGANIZACIYA_MESTO_RABOTY · int', 2),
+  _ColumnSpec('N_OMON', 'Номер ЭМК · varchar', 2),
+  _ColumnSpec('NOMER_MEDICISKOJ_KART', 'Медицинская карта № · varchar', 2),
+  _ColumnSpec('NOM', 'Фамилия · varchar', 2),
+  _ColumnSpec('PRENOM', 'Имя · varchar', 2),
+  _ColumnSpec('PATRONYME', 'Отчество · varchar', 2),
+  _ColumnSpec('FIO', 'ФИО · varchar', 2),
+  _ColumnSpec('POL', 'Пол · int', 2),
+  _ColumnSpec('NE_LE', 'Дата рождения · datetime', 2),
+  _ColumnSpec('FM_ORG_ID', 'FM_ORG_ID · int', 2),
+  _ColumnSpec('VES', 'Вес · numeric', 2),
+  _ColumnSpec('ROST', 'Рост · numeric', 2),
+  _ColumnSpec('PROIS_OGDENIE', 'PROIS_OGDENIE · int', 2),
+  _ColumnSpec('MEDECINS_CREATE_ID', 'MEDECINS_CREATE_ID · int', 2),
+  _ColumnSpec('DOSSIER_EXIT', 'Умер · bit', 2),
+  _ColumnSpec('DATA_SMERTI', 'Дата смерти · datetime', 2),
+  _ColumnSpec('ARCHIVE', 'Архивный · bit', 2),
+  _ColumnSpec('ALSAC', 'ALSAC · bit', 2),
+  _ColumnSpec('N_OMON_CHILD', 'N_OMON_CHILD · varchar', 2),
+  _ColumnSpec('GOD_ROGDENIQ', 'GOD_ROGDENIQ · varchar', 2),
+  _ColumnSpec('EMAIL', 'Электронная почта · varchar', 2),
+  _ColumnSpec('MMK', 'MMK · varchar', 2),
+  _ColumnSpec('DUBL_NOMERA', 'DUBL_NOMERA · varchar', 2),
+  _ColumnSpec('SHETHIK_MEDKART', 'SHETHIK_MEDKART · numeric', 2),
+  _ColumnSpec('DLQ_MAKROSA_MEDKART', 'DLQ_MAKROSA_MEDKART · bit', 2),
+  _ColumnSpec('NOMER_POMS', 'Номер полиса ОМС · varchar', 2),
+  _ColumnSpec('SERIQ_POMS', 'Серия полиса ОМС · varchar', 2),
+  _ColumnSpec('OMS', 'ОМС · bit', 2),
+  _ColumnSpec('VID_OMS', 'VID_OMS · int', 2),
+  _ColumnSpec('PRIZNAK_OMS_MOSKVA', 'PRIZNAK_OMS_MOSKVA · int', 2),
+  _ColumnSpec('PRIZNAK_OMS_REGION', 'PRIZNAK_OMS_REGION · int', 2),
+  _ColumnSpec('BYDGET', 'BYDGET · bit', 2),
+  _ColumnSpec('VID_BYDGETA', 'VID_BYDGETA · int', 2),
+  _ColumnSpec('PLATN_J', 'PLATN_J · bit', 2),
+  _ColumnSpec('DMS', 'ДМС · bit', 2),
+  _ColumnSpec('VID_DMS', 'VID_DMS · int', 2),
+  _ColumnSpec('GITEL_GORODA_SELA', 'GITEL_GORODA_SELA · int', 2),
+  _ColumnSpec('PROPISKA', 'PROPISKA · int', 2),
+  _ColumnSpec('INDEKS', 'INDEKS · varchar', 2),
+  _ColumnSpec('STRANA1', 'STRANA1 · int', 2),
+  _ColumnSpec('STRANA', 'STRANA · varchar', 2),
+  _ColumnSpec('KOD_TERRITORII', 'KOD_TERRITORII · int', 2),
+  _ColumnSpec('OBLAST', 'OBLAST · varchar', 2),
+  _ColumnSpec('RAJON_ROSSII', 'RAJON_ROSSII · int', 2),
+  _ColumnSpec('RAJON', 'RAJON · varchar', 2),
+  _ColumnSpec('KOD_NASELENNOGO_PUNKTA', 'KOD_NASELENNOGO_PUNKTA · int', 2),
+  _ColumnSpec('OBLAST_GOROD', 'OBLAST_GOROD · int', 2),
+  _ColumnSpec('NASELENN_J_PUNKT', 'Населённый пункт · varchar', 2),
+  _ColumnSpec('RAYON_GORODA', 'RAYON_GORODA · varchar', 2),
+  _ColumnSpec('ULICA_MOSKVA1', 'ULICA_MOSKVA1 · int', 2),
+  _ColumnSpec('ULICA_MOSKVA', 'ULICA_MOSKVA · int', 2),
+  _ColumnSpec('ULICA', 'ULICA · varchar', 2),
+  _ColumnSpec('DOM', 'DOM · varchar', 2),
+  _ColumnSpec('KORPUS', 'KORPUS · varchar', 2),
+  _ColumnSpec('STROENIE', 'STROENIE · varchar', 2),
+  _ColumnSpec('KVARTIRA', 'KVARTIRA · varchar', 2),
+  _ColumnSpec('POD_EZD', 'POD_EZD · varchar', 2),
+  _ColumnSpec('ETAG', 'ETAG · varchar', 2),
+  _ColumnSpec('KOD_DOMOFON', 'KOD_DOMOFON · varchar', 2),
+  _ColumnSpec('ADRES_PO_PROPISKE', 'Адрес постоянного места жительства · text', 2),
+  _ColumnSpec('ADRES_FAKTIHESKIJ', 'Адрес регистрации по месту пребывания · text', 2),
+  _ColumnSpec('TEL', 'Телефон · varchar', 2),
+  _ColumnSpec('MOBIL_TELEFON', 'Мобильный телефон · varchar', 2),
+  _ColumnSpec('SNILS', 'СНИЛС · varchar', 2),
+  _ColumnSpec('ISTOHNIK_FINANSIROVANIQ', 'ISTOHNIK_FINANSIROVANIQ · int', 2),
+  _ColumnSpec('DOKUMENT_UDOSTOVERQYHIJ_P', 'DOKUMENT_UDOSTOVERQYHIJ_P · varchar', 2),
+  _ColumnSpec('DOKUMENT_L_GOTA', 'DOKUMENT_L_GOTA · varchar', 2),
+  _ColumnSpec('KOGDA_V_DAN_L_GOTA', 'KOGDA_V_DAN_L_GOTA · datetime', 2),
+  _ColumnSpec('KEM_V_DAN_L_GOTA', 'KEM_V_DAN_L_GOTA · varchar', 2),
+  _ColumnSpec('DOKUMENT_O_L_GOTE', 'DOKUMENT_O_L_GOTE · text', 2),
+  _ColumnSpec('INVALIDNOST', 'Инвалидность · int', 2),
+  _ColumnSpec('STEPEN_INVALIDNOSTI', 'STEPEN_INVALIDNOSTI · int', 2),
+  _ColumnSpec('DISPANSERNAQ_GRUPPA', 'Диспансерная группа · int', 2),
+  _ColumnSpec('DATA_POSTANOVKI_NA_UHET', 'Дата постановки на учёт · datetime', 2),
+  _ColumnSpec('DATA_SNQTIQ_S_UHETA', 'DATA_SNQTIQ_S_UHETA · datetime', 2),
+  _ColumnSpec('NOMER_LPU', 'NOMER_LPU · numeric', 2),
+  _ColumnSpec('UHASTOK', 'UHASTOK · numeric', 2),
+  _ColumnSpec('INOSTRANN_J_GRAGDANIN', 'INOSTRANN_J_GRAGDANIN · bit', 2),
+  _ColumnSpec('GRAGDANSTVO', 'GRAGDANSTVO · varchar', 2),
+  _ColumnSpec('NACIONAL_NOST', 'NACIONAL_NOST · varchar', 2),
+  _ColumnSpec('VID_DOKUMENTA', 'VID_DOKUMENTA · int', 2),
+  _ColumnSpec('SERIQ_DOKUMENTA', 'SERIQ_DOKUMENTA · varchar', 2),
+  _ColumnSpec('PASPORT_N', 'PASPORT_N · varchar', 2),
+  _ColumnSpec('KOGDA_V_DAN', 'KOGDA_V_DAN · datetime', 2),
+  _ColumnSpec('KEM_V_DAN', 'KEM_V_DAN · varchar', 2),
+  _ColumnSpec('UDOSTOVERENIE_LIHNOSTI', 'UDOSTOVERENIE_LIHNOSTI · text', 2),
+  _ColumnSpec('OTHESTVO_RODITELQ', 'OTHESTVO_RODITELQ · varchar', 2),
+  _ColumnSpec('IMQ_RODITELQ', 'IMQ_RODITELQ · varchar', 2),
+  _ColumnSpec('FAMILIQ_RODITELQ', 'FAMILIQ_RODITELQ · varchar', 2),
+  _ColumnSpec('DOKUMENT_RODITELQ', 'DOKUMENT_RODITELQ · bit', 2),
+  _ColumnSpec('PORQDKOV_J_NOMER_REBENKA', 'PORQDKOV_J_NOMER_REBENKA · varchar', 2),
+  _ColumnSpec('DOKUMENT_V_ROLI_POLISA', 'DOKUMENT_V_ROLI_POLISA · bit', 2),
+  _ColumnSpec('SOCIAL_N_J_STATUS', 'SOCIAL_N_J_STATUS · varchar', 2),
+  _ColumnSpec('SOCIAL_N_J_STATUS1', 'SOCIAL_N_J_STATUS1 · int', 2),
+  _ColumnSpec('RABOTA1', 'RABOTA1 · int', 2),
+  _ColumnSpec('RABOTA', 'RABOTA · varchar', 2),
+  _ColumnSpec('DOLGNOST', 'DOLGNOST · varchar', 2),
+  _ColumnSpec('RAB_TEL', 'RAB_TEL · varchar', 2),
+  _ColumnSpec('FAKS', 'FAKS · varchar', 2),
+  _ColumnSpec('PRIMEHANIE', 'PRIMEHANIE · text', 2),
+  _ColumnSpec('KATEGORIQ', 'KATEGORIQ · int', 2),
+  _ColumnSpec('APTEHNAQ_KATEGORIQ', 'APTEHNAQ_KATEGORIQ · int', 2),
+  _ColumnSpec('KATEGORIQ_L_GOTNOSTI', 'KATEGORIQ_L_GOTNOSTI · varchar', 2),
+  _ColumnSpec('GOSPITALIZIROVAN', 'GOSPITALIZIROVAN · bit', 2),
+  _ColumnSpec('ISTORIYA_RODOV', 'ISTORIYA_RODOV · int', 2),
+  _ColumnSpec('TERAPEVT', 'TERAPEVT · int', 2),
+  _ColumnSpec('NAPRAVLENIE', 'NAPRAVLENIE · varchar', 2),
+  _ColumnSpec('NAPRAVLENIE_S', 'NAPRAVLENIE_S · datetime', 2),
+  _ColumnSpec('NAPRAVLENIE_PO', 'NAPRAVLENIE_PO · datetime', 2),
+  _ColumnSpec('PRIZNAK_DVIGENIQ', 'PRIZNAK_DVIGENIQ · int', 2),
+  _ColumnSpec('NOMER_KMS', 'NOMER_KMS · varchar', 2),
+  _ColumnSpec('SERIQ_KMS', 'SERIQ_KMS · varchar', 2),
+  _ColumnSpec('SOCIAL_NAQ_GRUPPA_DLQ_089', 'SOCIAL_NAQ_GRUPPA_DLQ_089 · varchar', 2),
+  _ColumnSpec('KATEGORIIQ_BOL_NOGO_DLQ_0', 'KATEGORIIQ_BOL_NOGO_DLQ_0 · varchar', 2),
+  _ColumnSpec('DETSKOE_UHREGDENIE', 'DETSKOE_UHREGDENIE · varchar', 2),
+  _ColumnSpec('PRIZYVNIK', 'PRIZYVNIK · bit', 2),
+  _ColumnSpec('REG', 'REG · bit', 2),
+  _ColumnSpec('SOGLASIE_POLUCHENO', 'SOGLASIE_POLUCHENO · bit', 2),
+  _ColumnSpec('SUPRUG', 'SUPRUG · int', 2),
+  _ColumnSpec('KOD_DONORA', 'KOD_DONORA · varchar', 2),
+  _ColumnSpec('NOT_IDENTIFIED', 'NOT_IDENTIFIED · bit', 2),
+  _ColumnSpec('WEB_PLANNING_LOCKED', 'WEB_PLANNING_LOCKED · bit', 2),
+  _ColumnSpec('KARTA_V_ARHIVE', 'KARTA_V_ARHIVE · bit', 2),
+  _ColumnSpec('NOT_SEND_SMS', 'NOT_SEND_SMS · bit', 2),
+  _ColumnSpec('NOT_SEND_MAILING_SMS', 'NOT_SEND_MAILING_SMS · bit', 2),
+  _ColumnSpec('KATEGORIQ_L_GOT', 'KATEGORIQ_L_GOT · int', 2),
+  _ColumnSpec('FIO_TRENERA', 'FIO_TRENERA · varchar', 2),
+  _ColumnSpec('TEL_TRENERA', 'TEL_TRENERA · varchar', 2),
+  _ColumnSpec('FIO_SPORTIVNOGO_VRACHA', 'FIO_SPORTIVNOGO_VRACHA · varchar', 2),
+  _ColumnSpec('TEL_SPORTIVNOGO_VRACHA', 'TEL_SPORTIVNOGO_VRACHA · varchar', 2),
+  _ColumnSpec('SPORTIVNYY_RAZRYAD', 'SPORTIVNYY_RAZRYAD · int', 2),
+  _ColumnSpec('SOSTAV', 'SOSTAV · int', 2),
+  _ColumnSpec('E_MAIL', 'E_MAIL · varchar', 2),
+  _ColumnSpec('SEMEYNOE_POLOZHENIE', 'SEMEYNOE_POLOZHENIE · int', 2),
+  _ColumnSpec('NALICHIE_DETEY', 'NALICHIE_DETEY · bit', 2),
+  _ColumnSpec('SPORTIVNYY_VRACH', 'SPORTIVNYY_VRACH · int', 2),
+  _ColumnSpec('OBRAZOVANIE', 'OBRAZOVANIE · int', 2),
+  _ColumnSpec('KLASS_SHKOLY', 'KLASS_SHKOLY · numeric', 2),
+  _ColumnSpec('MESTO_RABOTY_ADRES', 'MESTO_RABOTY_ADRES · varchar', 2),
+  _ColumnSpec('PROFESSIYA', 'PROFESSIYA · varchar', 2),
+  _ColumnSpec('NAZVANIE_LECHEBNOGO_UCHRE', 'NAZVANIE_LECHEBNOGO_UCHRE · varchar', 2),
+  _ColumnSpec('ADRES_LECHEBNOGO_UCHREZHD', 'ADRES_LECHEBNOGO_UCHREZHD · varchar', 2),
+  _ColumnSpec('SEZONNOST_SPORTA', 'SEZONNOST_SPORTA · int', 2),
+  _ColumnSpec('PLACE_OF_BIRTH_COUNTRY', 'PLACE_OF_BIRTH_COUNTRY · int', 2),
+  _ColumnSpec('PLACE_OF_BIRTH_OBLAST', 'PLACE_OF_BIRTH_OBLAST · int', 2),
+  _ColumnSpec('PLACE_OF_BIRTH_REGION', 'PLACE_OF_BIRTH_REGION · int', 2),
+  _ColumnSpec('PLACE_OF_BIRTH_CITY', 'PLACE_OF_BIRTH_CITY · int', 2),
+  _ColumnSpec('PLACE_OF_BIRTH_COUNTRY_TE', 'PLACE_OF_BIRTH_COUNTRY_TE · varchar', 2),
+  _ColumnSpec('PLACE_OF_BIRTH_REGION_TEX', 'PLACE_OF_BIRTH_REGION_TEX · varchar', 2),
+  _ColumnSpec('PLACE_OF_BIRTH_CITY_TEXT', 'PLACE_OF_BIRTH_CITY_TEXT · varchar', 2),
+  _ColumnSpec('TESTOVYY_PACIENT', 'TESTOVYY_PACIENT · bit', 2),
+  _ColumnSpec('LPU_PRIKREPLENIYA', 'LPU_PRIKREPLENIYA · int', 2),
+  _ColumnSpec('NET_V_KLADRE', 'NET_V_KLADRE · bit', 2),
+  _ColumnSpec('VTOROE_MESTO_RABOTY', 'VTOROE_MESTO_RABOTY · varchar', 2),
+  _ColumnSpec('DOLZHNOST_VTORAYA_', 'DOLZHNOST_VTORAYA_ · varchar', 2),
+  _ColumnSpec('ADDRESS_SMO', 'ADDRESS_SMO · varchar', 2),
+  _ColumnSpec('PODRAZDELENIE', 'PODRAZDELENIE · varchar', 2),
+  _ColumnSpec('kontingent_str', 'kontingent_str · varchar', 2),
+  _ColumnSpec('PROFESSIYA_SSYLKA_', 'PROFESSIYA_SSYLKA_ · int', 2),
+  _ColumnSpec('NUMERO_MEDTR', 'NUMERO_MEDTR · varchar', 2),
+  _ColumnSpec('C_PRINC', 'C_PRINC · int', 2),
+  _ColumnSpec('AGE_AUTO', 'AGE_AUTO · numeric', 2),
+  _ColumnSpec('MEDECINS_ID', 'MEDECINS_ID · int', 2),
+  _ColumnSpec('KRN_CREATE_DATE', 'Дата создания записи · datetime', 2),
+  _ColumnSpec('KRN_CREATE_USER_ID', 'KRN_CREATE_USER_ID · int', 2),
+  _ColumnSpec('KRN_MODIFY_DATE', 'KRN_MODIFY_DATE · datetime', 2),
+  _ColumnSpec('KRN_MODIFY_USER_ID', 'KRN_MODIFY_USER_ID · int', 2),
+  _ColumnSpec('KRN_CREATE_DATABASE_ID', 'KRN_CREATE_DATABASE_ID · int', 2),
+  _ColumnSpec('KRN_MODIFY_DATABASE_ID', 'KRN_MODIFY_DATABASE_ID · int', 2),
+  _ColumnSpec('KRN_GUID', 'KRN_GUID · varchar', 2),
+  _ColumnSpec('Date_LPU_clink', 'Date_LPU_clink · datetime', 2),
+  _ColumnSpec('DATE_LAST_MED_EXAMS', 'Дата последней диспансеризации · datetime', 2),
+  _ColumnSpec('PAT_1C_ID', 'PAT_1C_ID · varchar', 2),
+  _ColumnSpec('sms_consent', 'Согласие на СМС информирование · bit', 2),
+  _ColumnSpec('MSS_ID_CARD', 'MSS_ID_CARD · varchar', 2),
+  _ColumnSpec('CHLEN_SEM_I_1', 'CHLEN_SEM_I_1 · varchar', 2),
+  _ColumnSpec('CHLEN_SEM_I_2', 'CHLEN_SEM_I_2 · varchar', 2),
+  _ColumnSpec('ANALIZY_PO_EMAIL', 'ANALIZY_PO_EMAIL · int', 2),
+  _ColumnSpec('SOTRUDNIK', 'SOTRUDNIK · bit', 2),
+  _ColumnSpec('NOMER_SAN', 'NOMER_SAN · varchar', 2),
+  _ColumnSpec('SURNAME_IO', 'SURNAME_IO · varchar', 2),
+  _ColumnSpec('VYDANO_IDS', 'VYDANO_IDS · bit', 2),
+  _ColumnSpec('ISTOCHNIK_INFORMIROVANIYA', 'ISTOCHNIK_INFORMIROVANIYA · int', 2),
+  _ColumnSpec('ISTOCHNIK', 'ISTOCHNIK · int', 2),
+  _ColumnSpec('ISTOCHNIK_INFORMIROVANIYA_GCM', 'ISTOCHNIK_INFORMIROVANIYA_GCM · int', 2),
+  _ColumnSpec('KOD_PODRAZDELENIYA', 'KOD_PODRAZDELENIYA · varchar', 2),
+  _ColumnSpec('KOD_PODRAZDELENIYA_PASPOR', 'KOD_PODRAZDELENIYA_PASPOR · varchar', 2),
+  _ColumnSpec('INN', 'ИНН · varchar', 2),
+  _ColumnSpec('PROVERKA', 'PROVERKA · numeric', 2),
+];
+
+Map<String, String> _patientFieldValues({
+  required String patientId,
+  required String name,
+  required String emk,
+  String birth = '—',
+  String sex = '—',
+  String policy = '—',
+  String address = '—',
+  String phone = '—',
+}) {
+  final parts = name.split(' ');
+  return {
+    'PATIENTS_ID': patientId,
+    'FIO': name,
+    'NOM': parts.isNotEmpty ? parts.first : '—',
+    'PRENOM': parts.length > 1 ? parts[1] : '—',
+    'PATRONYME': parts.length > 2 ? parts.skip(2).join(' ') : '—',
+    'N_OMON': emk,
+    'NE_LE': birth,
+    'POL': sex,
+    'NOMER_POMS': policy,
+    'MOBIL_TELEFON': phone,
+    'TEL': phone,
+    'ADRES_PO_PROPISKE': address,
+    'NASELENN_J_PUNKT': 'Москва',
+    'OMS': 'Да',
+    'ARCHIVE': 'Нет',
+  };
+}
+
+Map<String, Widget> _patientCells(Map<String, String> values) => {
+  for (final column in _patientColumns)
+    column.key: Text(values[column.key] ?? '—',
+      maxLines: 2, overflow: TextOverflow.ellipsis,
+      style: const TextStyle(fontSize: 10, color: Color(0xFF536579))),
+};
+
+String _patientIdFromEmk(String emk) {
+  final digits = emk.replaceAll(RegExp(r'[^0-9]'), '');
+  return 'PAT-${digits.isEmpty ? 'UNKNOWN' : digits}';
+}
+
+const _patientFilterOptions = <String>[
+  'Все пациенты',
+  'Алексеева Мария Викторовна',
+  'Белов Андрей Сергеевич',
+  'Васильева Елена Павловна',
+  'Громов Дмитрий Олегович',
+  'Демидова Наталья Игоревна',
+  'Егоров Михаил Андреевич',
+  'Жукова Ольга Николаевна',
+  'Зайцев Павел Владимирович',
+  'Ильина Татьяна Сергеевна',
+  'Крылов Артём Евгеньевич',
+  'Лебедева Анна Дмитриевна',
+  'Макаров Сергей Петрович',
+  'Никитина Ирина Алексеевна',
+  'Осипов Владимир Михайлович',
+  'Павлова Светлана Романовна',
+  'Романов Кирилл Денисович',
+  'Соколова Марина Юрьевна',
+  'Тихонов Алексей Борисович',
+  'Фёдорова Дарья Константиновна',
+];
+
+Widget _patientFilter(String value, ValueChanged<String> onChanged) =>
+  SizedBox(width: 270, child: DropdownButtonFormField<String>(
+    initialValue: value,
+    isExpanded: true,
+    decoration: const InputDecoration(labelText: 'Фильтр по пациенту', isDense: true),
+    items: _patientFilterOptions.map((name) =>
+      DropdownMenuItem(value: name, child: Text(name, overflow: TextOverflow.ellipsis))).toList(),
+    onChanged: (next) => onChanged(next ?? 'Все пациенты'),
+  ));
+
+
 const _defaultColumns = <String, List<String>>{
-  'queue': ['id', 'type', 'doctor', 'date', 'status'],
-  'archive': ['id', 'type', 'patient', 'date', 'status'],
-  'iemk': ['FIO', 'N_OMON', 'NE_LE', 'NOMER_POMS', 'DOCUMENTS', 'ALERTS'],
-  'audit': ['time', 'event', 'object', 'user', 'result'],
+  'queue': ['FIO', 'N_OMON', 'PATIENTS_ID', 'id', 'type', 'doctor', 'date', 'status'],
+  'archive': ['FIO', 'N_OMON', 'PATIENTS_ID', 'id', 'type', 'patient', 'date', 'status'],
+  'iemk': ['PATIENTS_ID', 'FIO', 'N_OMON', 'NE_LE', 'NOMER_POMS', 'DOCUMENTS', 'ALERTS'],
+  'audit': ['FIO', 'N_OMON', 'PATIENTS_ID', 'time', 'event', 'object', 'user', 'result'],
 };
 
 class _ColumnSettingsButton extends StatelessWidget {
@@ -941,15 +1442,16 @@ class QueuePage extends StatefulWidget {
 class _QueuePageState extends State<QueuePage> {
   String filter = 'Все';
   String query = '';
+  String patientFilter = 'Все пациенты';
   List<String> visibleColumns = _defaultColumns['queue']!;
-  static const columns = <_ColumnSpec>[
+  static final columns = <_ColumnSpec>[..._patientColumns,
     _ColumnSpec('id', 'ID документа', 2),
     _ColumnSpec('type', 'Тип СЭМД', 4),
     _ColumnSpec('patient', 'Пациент', 3),
     _ColumnSpec('emk', 'Номер ЭМК', 2),
     _ColumnSpec('doctor', 'Врач', 2),
     _ColumnSpec('date', 'Дата формирования', 2),
-    _ColumnSpec('status', 'Статус', 2),
+    _ColumnSpec('status', 'Статус документа', 2),
   ];
   @override
   void initState() {
@@ -985,8 +1487,9 @@ class _QueuePageState extends State<QueuePage> {
   Widget build(BuildContext context) {
     final filtered = docs.where((d) {
       final matchesFilter = filter == 'Все' || (filter == 'Готовы' && d.type == 0) || (filter == 'Ошибки' && d.type == 2);
-      final matchesQuery = '${d.id} ${d.name} ${d.doctor}'.toLowerCase().contains(query.toLowerCase());
-      return matchesFilter && matchesQuery;
+      final matchesQuery = '${d.id} ${d.name} ${d.doctor} ${d.patient} ${d.emk}'.toLowerCase().contains(query.toLowerCase());
+      final matchesPatient = patientFilter == 'Все пациенты' || d.patient == patientFilter;
+      return matchesFilter && matchesQuery && matchesPatient;
     }).toList();
     return _PagePadding(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -1005,6 +1508,8 @@ class _QueuePageState extends State<QueuePage> {
               decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Поиск по ID, типу документа или врачу'),
               onChanged: (v) => setState(() => query = v),
             ),
+            const SizedBox(height: 10),
+            _patientFilter(patientFilter, (value) => setState(() => patientFilter = value)),
             const SizedBox(height: 12),
             Row(children: [
               SegmentedButton<String>(
@@ -1022,6 +1527,8 @@ class _QueuePageState extends State<QueuePage> {
             ]),
           ]),
         )),
+        const SizedBox(height: 10),
+        _patientFilter(patientFilter, (value) => setState(() => patientFilter = value)),
         const SizedBox(height: 12),
         Card(child: Column(children: [
           Padding(
@@ -1039,7 +1546,7 @@ class _QueuePageState extends State<QueuePage> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Column(children: [
-              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: 1120),
+              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: 5200),
               for (final d in filtered)
                 InkWell(
                   onTap: () => showDialog(context: context, builder: (_) => _DocumentDialog(doc: d)),
@@ -1048,6 +1555,7 @@ class _QueuePageState extends State<QueuePage> {
                     child: _columnDataRow(
                       columns.where((c) => visibleColumns.contains(c.key)).toList(),
                       {
+                        ..._patientCells(_patientFieldValues(patientId: _patientIdFromEmk(d.emk), name: d.patient, emk: d.emk)),
                         'id': Text(d.id, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
                         'type': Text(d.name, style: const TextStyle(fontSize: 11)),
                         'patient': Text(d.patient, style: const TextStyle(fontSize: 10)),
@@ -1056,7 +1564,7 @@ class _QueuePageState extends State<QueuePage> {
                         'date': Text(d.date, style: const TextStyle(fontSize: 10, color: Color(0xFF8794A3))),
                         'status': _StatusBadge(label: d.status, type: d.type),
                       },
-                      width: 1120,
+                      width: 5200,
                     ),
                   ),
                 ),
@@ -1159,9 +1667,10 @@ class ArchivePage extends StatefulWidget {
 
 class _ArchivePageState extends State<ArchivePage> {
   String query = '';
+  String patientFilter = 'Все пациенты';
   _Doc? selectedDocument;
   List<String> visibleColumns = _defaultColumns['archive']!;
-  static const columns = <_ColumnSpec>[
+  static final columns = <_ColumnSpec>[..._patientColumns,
     _ColumnSpec('id', 'ID документа', 2),
     _ColumnSpec('type', 'Тип СЭМД', 4),
     _ColumnSpec('patient', 'Пациент', 3),
@@ -1208,8 +1717,8 @@ class _ArchivePageState extends State<ArchivePage> {
 
   Widget _buildList() {
     final filtered = documents.where((d) =>
-      '${d.id} ${d.name} ${d.doctor} ${d.patient} ${d.emk}'
-        .toLowerCase().contains(query.toLowerCase())
+      '${d.id} ${d.name} ${d.doctor} ${d.patient} ${d.emk}'.toLowerCase().contains(query.toLowerCase()) &&
+      (patientFilter == 'Все пациенты' || d.patient == patientFilter)
     ).toList();
     return _PagePadding(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -1245,7 +1754,7 @@ class _ArchivePageState extends State<ArchivePage> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Column(children: [
-              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: 1120),
+              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: 5200),
               for (final d in filtered)
                 InkWell(
                   onTap: () => setState(() => selectedDocument = d),
@@ -1254,6 +1763,7 @@ class _ArchivePageState extends State<ArchivePage> {
                     child: _columnDataRow(
                       columns.where((c) => visibleColumns.contains(c.key)).toList(),
                       {
+                        ..._patientCells(_patientFieldValues(patientId: _patientIdFromEmk(d.emk), name: d.patient, emk: d.emk)),
                         'id': Text(d.id, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
                         'type': Text(d.name, style: const TextStyle(fontSize: 11)),
                         'patient': Text(d.patient, style: const TextStyle(fontSize: 10, color: Color(0xFF68798A))),
@@ -1262,7 +1772,7 @@ class _ArchivePageState extends State<ArchivePage> {
                         'date': Text(d.date, style: const TextStyle(fontSize: 10, color: Color(0xFF8794A3))),
                         'status': _StatusBadge(label: d.status, type: d.type),
                       },
-                      width: 1100,
+                      width: 5200,
                     ),
                   ),
                 ),
@@ -1366,33 +1876,9 @@ class _IemkPageState extends State<IemkPage> {
   bool refreshed = false;
   List<String> visibleColumns = _defaultColumns['iemk']!;
   // Метаданные PATIENTS: Field_Name / Field_Label / SQL_DATA_TYPE.
-  static const columns = <_ColumnSpec>[
-    _ColumnSpec('PATIENTS_ID', 'ID записи · int', 2),
-    _ColumnSpec('FIO', 'ФИО · varchar(99)', 4),
-    _ColumnSpec('NOM', 'Фамилия · varchar(50)', 2),
-    _ColumnSpec('PRENOM', 'Имя · varchar(50)', 2),
-    _ColumnSpec('PATRONYME', 'Отчество · varchar(50)', 2),
-    _ColumnSpec('N_OMON', 'Номер ЭМК · varchar(25)', 2),
-    _ColumnSpec('NOMER_MEDICISKOJ_KART', 'Медицинская карта № · varchar(10)', 2),
-    _ColumnSpec('NE_LE', 'Дата рождения · datetime', 2),
-    _ColumnSpec('POL', 'Пол · int', 1),
-    _ColumnSpec('NOMER_POMS', 'Номер полиса ОМС · varchar(99)', 2),
-    _ColumnSpec('SERIQ_POMS', 'Серия полиса ОМС · varchar(99)', 2),
-    _ColumnSpec('MOBIL_TELEFON', 'Мобильный телефон · varchar(99)', 2),
-    _ColumnSpec('TEL', 'Телефон · varchar(99)', 2),
-    _ColumnSpec('EMAIL', 'Электронная почта · varchar(60)', 2),
-    _ColumnSpec('SNILS', 'СНИЛС · varchar(14)', 2),
-    _ColumnSpec('ADRES_PO_PROPISKE', 'Адрес постоянного места жительства · text', 3),
-    _ColumnSpec('ADRES_FAKTIHESKIJ', 'Адрес регистрации по месту пребывания · text', 3),
-    _ColumnSpec('ARCHIVE', 'Архивный · bit', 1),
-    _ColumnSpec('DMS', 'ДМС · bit', 1),
-    _ColumnSpec('OMS', 'ОМС · bit', 1),
-    _ColumnSpec('INVALIDNOST', 'Инвалидность · int', 2),
-    _ColumnSpec('DISPANSERNAQ_GRUPPA', 'Диспансерная группа · int', 2),
-    _ColumnSpec('DATA_POSTANOVKI_NA_UHET', 'Дата постановки на учёт · datetime', 2),
-    _ColumnSpec('NASELENN_J_PUNKT', 'Населённый пункт · varchar(99)', 2),
-    _ColumnSpec('DOCUMENTS', 'Документы ИЭМК · демо', 1),
-    _ColumnSpec('ALERTS', 'Замечания · демо', 1),
+  static final columns = <_ColumnSpec>[..._patientColumns,
+    _ColumnSpec('DOCUMENTS', 'Документы ИЭМК · demo', 1),
+    _ColumnSpec('ALERTS', 'Замечания · demo', 1),
   ];
 
   @override
@@ -1461,7 +1947,7 @@ class _IemkPageState extends State<IemkPage> {
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Column(children: [
-            _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: 1450),
+            _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: 5200),
             for (final p in filtered)
               InkWell(
                 onTap: () => setState(() { selected = p; section = 'Общие сведения'; }),
@@ -1470,7 +1956,7 @@ class _IemkPageState extends State<IemkPage> {
                   child: _columnDataRow(
                     columns.where((c) => visibleColumns.contains(c.key)).toList(),
                     {
-                      'PATIENTS_ID': Text(p.id, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w700)),
+                      ..._patientCells(_patientFieldValues(patientId: p.id, name: p.name, emk: p.emk, birth: p.birth, sex: p.sex, policy: p.policy, address: p.address, phone: p.phone)),
                       'FIO': Text(p.name, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
                       'NOM': Text(p.name.split(' ').first, style: const TextStyle(fontSize: 10)),
                       'PRENOM': Text(p.name.split(' ').length > 1 ? p.name.split(' ')[1] : '—', style: const TextStyle(fontSize: 10)),
@@ -1499,7 +1985,7 @@ class _IemkPageState extends State<IemkPage> {
                           ? const _StatusBadge(label: 'Нет', type: 0)
                           : _StatusBadge(label: p.alerts.toString(), type: 1),
                     },
-                    width: 1450,
+                    width: 5200,
                   ),
                 ),
               ),
@@ -1699,6 +2185,59 @@ class _PatientSummary extends StatelessWidget {
       const SizedBox(height: 4), Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700))]));
 }
 
+
+String _auditPatientName(String objectId) {
+  const links = <String, String>{
+    'MED-001258':'Алексеева Мария Викторовна',
+    'MED-001257':'Белов Андрей Сергеевич',
+    'MED-001256':'Васильева Елена Павловна',
+    'MED-001255':'Громов Дмитрий Олегович',
+    'MED-001254':'Демидова Наталья Игоревна',
+    'MED-001253':'Егоров Михаил Андреевич',
+    'MED-001252':'Жукова Ольга Николаевна',
+    'MED-001251':'Зайцев Павел Владимирович',
+    'MED-001250':'Ильина Татьяна Сергеевна',
+    'MED-001249':'Крылов Артём Евгеньевич',
+    'MED-001248':'Лебедева Анна Дмитриевна',
+    'MED-001247':'Макаров Сергей Петрович',
+    'MED-001246':'Никитина Ирина Алексеевна',
+    'MED-001245':'Осипов Владимир Михайлович',
+    'MED-001244':'Павлова Светлана Романовна',
+    'MED-001243':'Романов Кирилл Денисович',
+    'MED-001242':'Соколова Марина Юрьевна',
+    'MED-001241':'Тихонов Алексей Борисович',
+    'MED-001240':'Фёдорова Дарья Константиновна',
+  };
+  return links[objectId] ?? '—';
+}
+
+Map<String, String> _auditPatientValues(String objectId) {
+  final name = _auditPatientName(objectId);
+  if (name == '—') return {};
+  const emks = <String, String>{
+    'Алексеева Мария Викторовна':'ЭМК-00018452',
+    'Белов Андрей Сергеевич':'ЭМК-00018451',
+    'Васильева Елена Павловна':'ЭМК-00018450',
+    'Громов Дмитрий Олегович':'ЭМК-00018449',
+    'Демидова Наталья Игоревна':'ЭМК-00018448',
+    'Егоров Михаил Андреевич':'ЭМК-00018447',
+    'Жукова Ольга Николаевна':'ЭМК-00018446',
+    'Зайцев Павел Владимирович':'ЭМК-00018445',
+    'Ильина Татьяна Сергеевна':'ЭМК-00018444',
+    'Крылов Артём Евгеньевич':'ЭМК-00018443',
+    'Лебедева Анна Дмитриевна':'ЭМК-00018442',
+    'Макаров Сергей Петрович':'ЭМК-00018441',
+    'Никитина Ирина Алексеевна':'ЭМК-00018440',
+    'Осипов Владимир Михайлович':'ЭМК-00018439',
+    'Павлова Светлана Романовна':'ЭМК-00018438',
+    'Романов Кирилл Денисович':'ЭМК-00018437',
+    'Соколова Марина Юрьевна':'ЭМК-00018436',
+    'Тихонов Алексей Борисович':'ЭМК-00018435',
+    'Фёдорова Дарья Константиновна':'ЭМК-00018434',
+  };
+  return _patientFieldValues(patientId: _patientIdFromEmk(emks[name]!), name: name, emk: emks[name]!);
+}
+
 class AuditPage extends StatefulWidget {
   const AuditPage({super.key});
 
@@ -1708,8 +2247,9 @@ class AuditPage extends StatefulWidget {
 
 class _AuditPageState extends State<AuditPage> {
   String query = '';
+  String patientFilter = 'Все пациенты';
   List<String> visibleColumns = _defaultColumns['audit']!;
-  static const columns = <_ColumnSpec>[
+  static final columns = <_ColumnSpec>[..._patientColumns,
     _ColumnSpec('time', 'Время', 2),
     _ColumnSpec('event', 'Событие', 4),
     _ColumnSpec('object', 'Объект', 2),
@@ -1757,6 +2297,8 @@ class _AuditPageState extends State<AuditPage> {
             decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Поиск по событию, пользователю или ID'),
             onChanged: (value) => setState(() => query = value),
           ),
+          const SizedBox(height: 10),
+          _patientFilter(patientFilter, (value) => setState(() => patientFilter = value)),
           const SizedBox(height: 8),
           Align(
             alignment: Alignment.centerRight,
@@ -1771,21 +2313,23 @@ class _AuditPageState extends State<AuditPage> {
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Column(children: [
-              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: 1000),
+              _columnHeaderRow(columns.where((c) => visibleColumns.contains(c.key)).toList(), width: 5200),
               for (final e in events.where((e) =>
-                (e.$1 + ' ' + e.$2 + ' ' + e.$3 + ' ' + e.$4 + ' ' + e.$6).toLowerCase().contains(query.toLowerCase())))
+                (e.$1 + ' ' + e.$2 + ' ' + e.$3 + ' ' + e.$4 + ' ' + e.$6 + ' ' + _auditPatientName(e.$3)).toLowerCase().contains(query.toLowerCase()) &&
+                (patientFilter == 'Все пациенты' || _auditPatientName(e.$3) == patientFilter)))
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
                   child: _columnDataRow(
                     columns.where((c) => visibleColumns.contains(c.key)).toList(),
                     {
+                      ..._patientCells(_auditPatientValues(e.$3)),
                       'time': Text(e.$1, style: const TextStyle(fontSize: 10, color: Color(0xFF77889A))),
                       'event': Text(e.$2, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
                       'object': Text(e.$3, style: const TextStyle(fontSize: 10)),
                       'user': Text(e.$6, style: const TextStyle(fontSize: 10, color: Color(0xFF77889A))),
                       'result': _StatusBadge(label: e.$4, type: e.$5),
                     },
-                    width: 1000,
+                    width: 5200,
                   ),
                 ),
             ]),
