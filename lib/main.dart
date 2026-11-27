@@ -2,9 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' show PointerDeviceKind;
 
-// Материал-библиотека Flutter остаётся целевой для текущей версии приложения.
-// ignore: deprecated_member_use
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'certificates_page.dart';
 
 void main() => runApp(const MedialogN3App());
@@ -442,17 +440,6 @@ const _patientFilterOptions = <String>[
   'Фёдорова Дарья Константиновна',
 ];
 
-Widget _patientFilter(String value, ValueChanged<String> onChanged) =>
-  SizedBox(width: 270, child: DropdownButtonFormField<String>(
-    initialValue: value,
-    isExpanded: true,
-    decoration: const InputDecoration(labelText: 'Фильтр по пациенту', isDense: true),
-    items: _patientFilterOptions.map((name) =>
-      DropdownMenuItem(value: name, child: Text(name, overflow: TextOverflow.ellipsis))).toList(),
-    onChanged: (next) => onChanged(next ?? 'Все пациенты'),
-  ));
-
-
 const _defaultColumns = <String, List<String>>{
   'queue': ['FIO', 'N_OMON', 'PATIENTS_ID', 'id', 'type', 'doctor', 'date', 'status'],
   'archive': ['FIO', 'N_OMON', 'PATIENTS_ID', 'id', 'type', 'patient', 'date', 'status'],
@@ -679,8 +666,7 @@ Widget _columnHeaderRow(
     shrinkWrap: true,
     physics: const NeverScrollableScrollPhysics(),
     buildDefaultDragHandles: false,
-    onReorder: (oldIndex, newIndex) {
-      if (newIndex > oldIndex) newIndex--;
+    onReorderItem: (oldIndex, newIndex) {
       final reordered = [...columns];
       final item = reordered.removeAt(oldIndex);
       reordered.insert(newIndex, item);
