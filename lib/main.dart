@@ -5,6 +5,7 @@ import 'dart:ui' show PointerDeviceKind;
 // Материал-библиотека Flutter остаётся целевой для текущей версии приложения.
 // ignore: deprecated_member_use
 import 'package:flutter/material.dart';
+import 'certificates_page.dart';
 
 void main() => runApp(const MedialogN3App());
 
@@ -15,6 +16,7 @@ const _navItems = <_NavItem>[
   _NavItem('Архив документов', Icons.folder_open_outlined),
   _NavItem('ИЭМК пациентов', Icons.medical_information_outlined),
   _NavItem('Журнал действий', Icons.receipt_long_outlined),
+  _NavItem('Управление ЭЦП', Icons.verified_user_outlined),
   _NavItem('Настройки', Icons.settings_outlined),
 ];
 
@@ -912,6 +914,7 @@ class _PageHost extends StatelessWidget {
       3 => const ArchivePage(),
       4 => const IemkPage(),
       5 => const AuditPage(),
+      6 => const CertificatesPage(),
       _ => const SettingsPage(),
     };
   }
