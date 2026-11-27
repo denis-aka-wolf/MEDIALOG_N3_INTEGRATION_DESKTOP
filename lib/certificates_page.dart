@@ -27,6 +27,7 @@ class _CertificatesPageState extends State<CertificatesPage> {
       _Certificate('CERT-0004', 'Смирнов Алексей Олегович', 'Врач-рентгенолог', 'УКЭП врача', 'УЦ ООО «Калуга Астрал»', 'A012 8D77 3F91 44C2', 'C2B7 11F9 40D3 8A62 19EF 3C20 8B11 0A5D', 'HDIMAGE\\SmirnovContainer', now.subtract(const Duration(days: 35)), now.add(const Duration(days: 330)), false),
       _Certificate('CERT-0005', 'Петров Пётр Сергеевич', 'Врач-хирург', 'УКЭП врача', 'УЦ АО «Такском»', '8B71 2F09 5A34 C611', '2A71 C0F9 5D34 B811 9A62 41EF 7C30 D509', 'Не определён', now.subtract(const Duration(days: 420)), now.subtract(const Duration(days: 12)), true),
       _Certificate('CERT-0006', 'Медицинская информационная система', 'Системная интеграция', 'Служебный сертификат', 'Тестовый удостоверяющий центр', 'DEMO 2026 0019', 'DEMO 7C11 A290 45F0 0000 0000 0000 0006', 'Локальное хранилище (демо)', now.subtract(const Duration(days: 20)), now.add(const Duration(days: 540)), true),
+      _Certificate('CERT-0007', 'Орлов Николай Сергеевич', 'Врач-невролог', 'УКЭП врача', 'Тестовый удостоверяющий центр', 'DEMO REVOKED 2026', 'DEMO 0000 0000 0000 0000 0000 0000 0007', 'Не определён', now.subtract(const Duration(days: 90)), now.add(const Duration(days: 275)), true, revoked: true),
     ];
   }
 
@@ -150,7 +151,7 @@ class _CertificatesPageState extends State<CertificatesPage> {
           ])))
         else
           SingleChildScrollView(scrollDirection: Axis.horizontal, child: DataTable(
-            columnSpacing: 24, headingRowHeight: 48, dataRowMinHeight: 58, dataRowMaxHeight: 68,
+            showCheckboxColumn: false, columnSpacing: 24, headingRowHeight: 48, dataRowMinHeight: 58, dataRowMaxHeight: 68,
             columns: const [
               DataColumn(label: Text('Владелец')), DataColumn(label: Text('Тип')),
               DataColumn(label: Text('Удостоверяющий центр')), DataColumn(label: Text('Действителен до')),
@@ -268,12 +269,14 @@ extension on _CertificateState {
 }
 
 class _Certificate {
-  _Certificate(this.id, this.owner, this.position, this.type, this.issuer, this.serial, this.thumbprint, this.container, this.from, this.to, this.registered);
+  _Certificate(this.id, this.owner, this.position, this.type, this.issuer, this.serial, this.thumbprint, this.container, this.from, this.to, this.registered, {this.revoked = false});
   final String id, owner, position, type, issuer, serial, thumbprint, container;
   final DateTime from, to;
   final bool registered;
+  final bool revoked;
   int get daysLeft => to.difference(DateTime.now()).inDays;
   _CertificateState get state {
+    if (revoked) return _CertificateState.revoked;
     if (daysLeft < 0) return _CertificateState.expired;
     if (daysLeft <= 30) return _CertificateState.expiring;
     if (!registered) return _CertificateState.pending;
