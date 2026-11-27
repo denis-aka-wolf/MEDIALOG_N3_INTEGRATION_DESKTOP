@@ -528,6 +528,127 @@ class _HorizontalTableState extends State<_HorizontalTable> {
 
 double _columnWidth(String screen, _ColumnSpec column) => _ColumnSettingsStore.width(screen, column.key);
 
+
+
+Widget _columnSettingsButton(
+  BuildContext context, {
+  required String screen,
+  required List<_ColumnSpec> columns,
+  required List<String> visibleColumns,
+  required ValueChanged<List<String>> onChanged,
+}) => IconButton(
+  tooltip: 'Настроить отображаемые колонки',
+  icon: const Icon(Icons.settings_outlined),
+  onPressed: () {
+    var selectedKeys = visibleColumns.toSet();
+    var search = '';
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, refreshDialog) {
+          final filtered = columns.where((column) =>
+            column.label.toLowerCase().contains(search.toLowerCase()) ||
+            column.key.toLowerCase().contains(search.toLowerCase())).toList();
+          return AlertDialog(
+            title: const Text('Настройка колонок'),
+            content: SizedBox(
+              width: 460,
+              height: 520,
+              child: Column(
+                children: [
+                  TextField(
+                    decoration: const InputDecoration(
+                      prefixIcon: Icon(Icons.search),
+                      hintText: 'Поиск по названию или имени поля',
+                      isDense: true,
+                    ),
+                    onChanged: (value) => refreshDialog(() => search = value),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Text(
+                        'Выбрано: ${selectedKeys.length} из ${columns.length}',
+                        style: const TextStyle(fontSize: 11, color: Color(0xFF718095)),
+                      ),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: () => refreshDialog(() {
+                          selectedKeys = columns.map((column) => column.key).toSet();
+                        }),
+                        child: const Text('Выбрать все'),
+                      ),
+                      TextButton(
+                        onPressed: () => refreshDialog(() {
+                          selectedKeys = (_defaultColumns[screen] ?? [])
+                              .where((key) => columns.any((column) => column.key == key))
+                              .toSet();
+                        }),
+                        child: const Text('По умолчанию'),
+                      ),
+                    ],
+                  ),
+                  const Divider(height: 1),
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: filtered.length,
+                      itemBuilder: (context, index) {
+                        final column = filtered[index];
+                        final checked = selectedKeys.contains(column.key);
+                        return CheckboxListTile(
+                          dense: true,
+                          controlAffinity: ListTileControlAffinity.leading,
+                          contentPadding: EdgeInsets.zero,
+                          value: checked,
+                          title: Text(column.label, style: const TextStyle(fontSize: 12)),
+                          subtitle: Text(column.key, style: const TextStyle(fontSize: 10, color: Color(0xFF8996A4))),
+                          onChanged: (value) {
+                            refreshDialog(() {
+                              if (value == true) {
+                                selectedKeys.add(column.key);
+                              } else if (selectedKeys.length > 1) {
+                                selectedKeys.remove(column.key);
+                              }
+                            });
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  if (selectedKeys.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.only(top: 6),
+                      child: Text('Должна быть выбрана хотя бы одна колонка.',
+                        style: TextStyle(fontSize: 11, color: Color(0xFFB42318))),
+                    ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text('Отмена'),
+              ),
+              FilledButton(
+                onPressed: selectedKeys.isEmpty ? null : () {
+                  final ordered = columns
+                      .where((column) => selectedKeys.contains(column.key))
+                      .map((column) => column.key)
+                      .toList();
+                  onChanged(ordered);
+                  _ColumnSettingsStore.set(screen, ordered);
+                  Navigator.pop(dialogContext);
+                },
+                child: const Text('Применить'),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  },
+);
+
 List<_ColumnSpec> _orderedVisibleColumns(List<_ColumnSpec> columns, List<String> order) {
   final byKey = {for (final column in columns) column.key: column};
   return [for (final key in order) if (byKey.containsKey(key)) byKey[key]!];
@@ -1412,6 +1533,9 @@ class _QueuePageState extends State<QueuePage> {
                 showSelectedIcon: false,
               ),
               const Spacer(),
+              _columnSettingsButton(context, screen: 'queue', columns: columns,
+                visibleColumns: visibleColumns,
+                onChanged: (value) => setState(() => visibleColumns = value)),
               OutlinedButton.icon(onPressed: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Демо: список обновлён.'))), icon: const Icon(Icons.refresh, size: 16), label: const Text('Обновить')),
             ]),
           ]),
@@ -1605,10 +1729,16 @@ class _ArchivePageState extends State<ArchivePage> {
         const SizedBox(height: 16),
         Card(child: Padding(
           padding: const EdgeInsets.all(16),
-          child: TextField(
-            decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Поиск по ID, типу СЭМД, пациенту или врачу'),
-            onChanged: (value) => setState(() => query = value),
-          ),
+          child: Row(children: [
+            Expanded(child: TextField(
+              decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Поиск по ID, типу СЭМД, пациенту или врачу'),
+              onChanged: (value) => setState(() => query = value),
+            )),
+            const SizedBox(width: 8),
+            _columnSettingsButton(context, screen: 'archive', columns: columns,
+              visibleColumns: visibleColumns,
+              onChanged: (value) => setState(() => visibleColumns = value)),
+          ]),
         )),
         const SizedBox(height: 12),
         Card(child: Column(children: [
@@ -1799,11 +1929,17 @@ class _IemkPageState extends State<IemkPage> {
         _MiniCount(label: 'Требуют внимания', value: '126'),
       ]),
       const SizedBox(height: 16),
-      Card(child: Padding(padding: const EdgeInsets.all(16), child: TextField(
-        decoration: const InputDecoration(prefixIcon: Icon(Icons.search),
-          hintText: 'Поиск по ФИО, ID пациента, номеру ИЭМК или полису ОМС'),
-        onChanged: (v) => setState(() => query = v),
-      ))),
+      Card(child: Padding(padding: const EdgeInsets.all(16), child: Row(children: [
+        Expanded(child: TextField(
+          decoration: const InputDecoration(prefixIcon: Icon(Icons.search),
+            hintText: 'Поиск по ФИО, ID пациента, номеру ИЭМК или полису ОМС'),
+          onChanged: (v) => setState(() => query = v),
+        )),
+        const SizedBox(width: 8),
+        _columnSettingsButton(context, screen: 'iemk', columns: columns,
+          visibleColumns: visibleColumns,
+          onChanged: (value) => setState(() => visibleColumns = value)),
+      ]))),
       const SizedBox(height: 12),
       Card(child: Column(children: [
         _HorizontalTable(
@@ -2166,10 +2302,16 @@ class _AuditPageState extends State<AuditPage> {
         ]),
         const SizedBox(height: 16),
         Card(child: Padding(padding: const EdgeInsets.all(15), child: Column(children: [
-          TextField(
-            decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Поиск по событию, пользователю или ID'),
-            onChanged: (value) => setState(() => query = value),
-          ),
+          Row(children: [
+            Expanded(child: TextField(
+              decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Поиск по событию, пользователю или ID'),
+              onChanged: (value) => setState(() => query = value),
+            )),
+            const SizedBox(width: 8),
+            _columnSettingsButton(context, screen: 'audit', columns: columns,
+              visibleColumns: visibleColumns,
+              onChanged: (value) => setState(() => visibleColumns = value)),
+          ]),
           const SizedBox(height: 8),
           const Divider(height: 8),
           _HorizontalTable(
