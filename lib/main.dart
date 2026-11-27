@@ -487,35 +487,36 @@ class _HorizontalTableState extends State<_HorizontalTable> {
         PointerDeviceKind.stylus,
       },
     ),
-    child: Scrollbar(
-      controller: _horizontalController,
-      thumbVisibility: true,
-      trackVisibility: true,
-      interactive: true,
-      thickness: 12,
-      radius: const Radius.circular(8),
-      notificationPredicate: (notification) => notification.depth == 0,
-      child: SingleChildScrollView(
+    child: LayoutBuilder(
+      builder: (context, constraints) => Scrollbar(
         controller: _horizontalController,
-        scrollDirection: Axis.horizontal,
-        primary: false,
-        child: SizedBox(
-          height: 520,
-          child: LayoutBuilder(
-            builder: (context, constraints) => ConstrainedBox(
-              constraints: BoxConstraints(minWidth: constraints.maxWidth),
+        thumbVisibility: true,
+        trackVisibility: true,
+        interactive: true,
+        thickness: 12,
+        radius: const Radius.circular(8),
+        notificationPredicate: (notification) => notification.depth == 0,
+        child: SingleChildScrollView(
+          controller: _horizontalController,
+          scrollDirection: Axis.horizontal,
+          primary: false,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minWidth: constraints.maxWidth),
+            child: SizedBox(
+              height: 520,
               child: Scrollbar(
-            controller: _verticalController,
-            thumbVisibility: true,
-            trackVisibility: true,
-            interactive: true,
-            thickness: 10,
-            radius: const Radius.circular(8),
-            notificationPredicate: (notification) => notification.depth == 0,
-            child: SingleChildScrollView(
-              controller: _verticalController,
-              primary: false,
-              child: widget.child,
+                controller: _verticalController,
+                thumbVisibility: true,
+                trackVisibility: true,
+                interactive: true,
+                thickness: 10,
+                radius: const Radius.circular(8),
+                notificationPredicate: (notification) => notification.depth == 0,
+                child: SingleChildScrollView(
+                  controller: _verticalController,
+                  primary: false,
+                  child: widget.child,
+                ),
               ),
             ),
           ),
