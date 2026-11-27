@@ -12,6 +12,7 @@ class CertificatesPage extends StatefulWidget {
 class _CertificatesPageState extends State<CertificatesPage> {
   late final List<_Certificate> _items;
   final _search = TextEditingController();
+  final _scrollController = ScrollController();
   String _status = 'Все статусы';
   String _type = 'Все типы';
   DateTime _checkedAt = DateTime.now();
@@ -34,6 +35,7 @@ class _CertificatesPageState extends State<CertificatesPage> {
   @override
   void dispose() {
     _search.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -56,8 +58,10 @@ class _CertificatesPageState extends State<CertificatesPage> {
     final expired = _count(_CertificateState.expired);
     final pending = _count(_CertificateState.pending);
     return Scrollbar(
+      controller: _scrollController,
       thumbVisibility: true,
       child: SingleChildScrollView(
+        controller: _scrollController,
         padding: const EdgeInsets.all(28),
         child: Center(
           child: ConstrainedBox(
