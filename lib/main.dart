@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' show PointerDeviceKind;
 
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter/material.dart';
 import 'certificates_page.dart';
 
 void main() => runApp(const MedialogN3App());
