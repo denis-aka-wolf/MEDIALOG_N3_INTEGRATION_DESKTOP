@@ -1,4 +1,4 @@
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter/material.dart';
 
 /// Демонстрационный реестр сертификатов. Windows Certificate Store и
 /// криптопровайдеры не опрашиваются, закрытые ключи не читаются.
