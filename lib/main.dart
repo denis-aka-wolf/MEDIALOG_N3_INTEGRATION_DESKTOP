@@ -501,7 +501,10 @@ class _HorizontalTableState extends State<_HorizontalTable> {
         primary: false,
         child: SizedBox(
           height: 520,
-          child: Scrollbar(
+          child: LayoutBuilder(
+            builder: (context, constraints) => ConstrainedBox(
+              constraints: BoxConstraints(minWidth: constraints.maxWidth),
+              child: Scrollbar(
             controller: _verticalController,
             thumbVisibility: true,
             trackVisibility: true,
@@ -513,6 +516,7 @@ class _HorizontalTableState extends State<_HorizontalTable> {
               controller: _verticalController,
               primary: false,
               child: widget.child,
+              ),
             ),
           ),
         ),
@@ -1320,7 +1324,6 @@ class QueuePage extends StatefulWidget {
 class _QueuePageState extends State<QueuePage> {
   String filter = 'Все';
   String query = '';
-  String patientFilter = 'Все пациенты';
   List<String> visibleColumns = _defaultColumns['queue']!;
   static final columns = <_ColumnSpec>[..._patientColumns,
     const _ColumnSpec('id', 'ID документа', 2),
@@ -1376,8 +1379,7 @@ class _QueuePageState extends State<QueuePage> {
     final filtered = docs.where((d) {
       final matchesFilter = filter == 'Все' || (filter == 'Готовы' && d.type == 0) || (filter == 'Ошибки' && d.type == 2);
       final matchesQuery = '${d.id} ${d.name} ${d.doctor} ${d.patient} ${d.emk}'.toLowerCase().contains(query.toLowerCase());
-      final matchesPatient = patientFilter == 'Все пациенты' || d.patient == patientFilter;
-      return matchesFilter && matchesQuery && matchesPatient;
+      return matchesFilter && matchesQuery;
     }).toList();
     return _PagePadding(
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -1396,8 +1398,6 @@ class _QueuePageState extends State<QueuePage> {
               decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Поиск по ID, типу документа или врачу'),
               onChanged: (v) => setState(() => query = v),
             ),
-            const SizedBox(height: 10),
-            _patientFilter(patientFilter, (value) => setState(() => patientFilter = value)),
             const SizedBox(height: 12),
             Row(children: [
               SegmentedButton<String>(
@@ -1415,8 +1415,6 @@ class _QueuePageState extends State<QueuePage> {
             ]),
           ]),
         )),
-        const SizedBox(height: 10),
-        _patientFilter(patientFilter, (value) => setState(() => patientFilter = value)),
         const SizedBox(height: 12),
         Card(child: Column(children: [
           _HorizontalTable(
@@ -2115,7 +2113,6 @@ class AuditPage extends StatefulWidget {
 
 class _AuditPageState extends State<AuditPage> {
   String query = '';
-  String patientFilter = 'Все пациенты';
   List<String> visibleColumns = _defaultColumns['audit']!;
   static final columns = <_ColumnSpec>[..._patientColumns,
     const _ColumnSpec('time', 'Время', 2),
@@ -2172,8 +2169,6 @@ class _AuditPageState extends State<AuditPage> {
             decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Поиск по событию, пользователю или ID'),
             onChanged: (value) => setState(() => query = value),
           ),
-          const SizedBox(height: 10),
-          _patientFilter(patientFilter, (value) => setState(() => patientFilter = value)),
           const SizedBox(height: 8),
           const Divider(height: 8),
           _HorizontalTable(
@@ -2184,8 +2179,7 @@ class _AuditPageState extends State<AuditPage> {
                 onOrderChanged: (value) => setState(() => visibleColumns = value),
               ),
               for (final e in events.where((e) =>
-                ('${e.$1} ${e.$2} ${e.$3} ${e.$4} ${e.$6} ${_auditPatientName(e.$3)}').toLowerCase().contains(query.toLowerCase()) &&
-                (patientFilter == 'Все пациенты' || _auditPatientName(e.$3) == patientFilter)))
+                ('${e.$1} ${e.$2} ${e.$3} ${e.$4} ${e.$6} ${_auditPatientName(e.$3)}').toLowerCase().contains(query.toLowerCase())))
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
                   child: _columnDataRow(
