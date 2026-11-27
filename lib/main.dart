@@ -541,6 +541,7 @@ Widget _columnSettingsButton(
   icon: const Icon(Icons.settings_outlined),
   onPressed: () {
     var selectedKeys = visibleColumns.toSet();
+    var customOrder = [...visibleColumns];
     var search = '';
     showDialog<void>(
       context: context,
@@ -575,14 +576,16 @@ Widget _columnSettingsButton(
                       TextButton(
                         onPressed: () => refreshDialog(() {
                           selectedKeys = columns.map((column) => column.key).toSet();
+                          customOrder = columns.map((column) => column.key).toList();
                         }),
                         child: const Text('Выбрать все'),
                       ),
                       TextButton(
                         onPressed: () => refreshDialog(() {
-                          selectedKeys = (_defaultColumns[screen] ?? [])
+                          customOrder = (_defaultColumns[screen] ?? [])
                               .where((key) => columns.any((column) => column.key == key))
-                              .toSet();
+                              .toList();
+                          selectedKeys = customOrder.toSet();
                         }),
                         child: const Text('По умолчанию'),
                       ),
@@ -606,8 +609,10 @@ Widget _columnSettingsButton(
                             refreshDialog(() {
                               if (value == true) {
                                 selectedKeys.add(column.key);
+                                if (!customOrder.contains(column.key)) customOrder.add(column.key);
                               } else if (selectedKeys.length > 1) {
                                 selectedKeys.remove(column.key);
+                                customOrder.remove(column.key);
                               }
                             });
                           },
@@ -631,10 +636,11 @@ Widget _columnSettingsButton(
               ),
               FilledButton(
                 onPressed: selectedKeys.isEmpty ? null : () {
-                  final ordered = columns
-                      .where((column) => selectedKeys.contains(column.key))
-                      .map((column) => column.key)
-                      .toList();
+                  final ordered = <String>[
+                    ...customOrder.where(selectedKeys.contains),
+                    ...columns.map((column) => column.key)
+                        .where((key) => selectedKeys.contains(key) && !customOrder.contains(key)),
+                  ];
                   onChanged(ordered);
                   _ColumnSettingsStore.set(screen, ordered);
                   Navigator.pop(dialogContext);
