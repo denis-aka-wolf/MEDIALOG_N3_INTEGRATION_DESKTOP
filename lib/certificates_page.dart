@@ -174,7 +174,7 @@ class _CertificatesPageState extends State<CertificatesPage> {
           ])))
         else
           _certificateTable(rows),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Row(children: [
           const Icon(Icons.touch_app_outlined, size: 14, color: Color(0xFF8190A0)),
           const SizedBox(width: 6),
