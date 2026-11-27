@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Демонстрационный реестр сертификатов. Windows Certificate Store и
 /// криптопровайдеры не опрашиваются, закрытые ключи не читаются.
@@ -162,7 +162,7 @@ class _CertificatesPageState extends State<CertificatesPage> {
             )),
           ]);
         }),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         const Divider(height: 1),
         if (rows.isEmpty)
           const Padding(padding: EdgeInsets.all(28), child: Center(child: Column(children: [
@@ -174,7 +174,7 @@ class _CertificatesPageState extends State<CertificatesPage> {
           ])))
         else
           _certificateTable(rows),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         Row(children: [
           const Icon(Icons.touch_app_outlined, size: 14, color: Color(0xFF8190A0)),
           const SizedBox(width: 6),
@@ -338,14 +338,14 @@ class _CertificatesPageState extends State<CertificatesPage> {
   Widget _securityInfo() => const Card(child: Padding(
     padding: EdgeInsets.all(18),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const Row(children: [Icon(Icons.security_outlined, size: 19, color: Color(0xFF477AA5)), SizedBox(width: 8), Text('Контроль безопасности', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800))]),
+      Row(children: [Icon(Icons.security_outlined, size: 19, color: Color(0xFF477AA5)), SizedBox(width: 8), Text('Контроль безопасности', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800))]),
       const SizedBox(height: 12),
-      const _InfoRow(title: 'Закрытые ключи', value: 'Не извлекаются и не хранятся приложением', icon: Icons.key_off_outlined),
-      const _InfoRow(title: 'Хранилище сертификатов', value: 'Не подключено. Данные на экране демонстрационные', icon: Icons.storage_outlined),
-      const _InfoRow(title: 'Криптопровайдер', value: 'CryptoPro CSP не подключён', icon: Icons.enhanced_encryption_outlined),
-      const _InfoRow(title: 'Проверка отзыва', value: 'CRL / OCSP не выполняется', icon: Icons.fact_check_outlined),
+      _InfoRow(title: 'Закрытые ключи', value: 'Не извлекаются и не хранятся приложением', icon: Icons.key_off_outlined),
+      _InfoRow(title: 'Хранилище сертификатов', value: 'Не подключено. Данные на экране демонстрационные', icon: Icons.storage_outlined),
+      _InfoRow(title: 'Криптопровайдер', value: 'CryptoPro CSP не подключён', icon: Icons.enhanced_encryption_outlined),
+      _InfoRow(title: 'Проверка отзыва', value: 'CRL / OCSP не выполняется', icon: Icons.fact_check_outlined),
       const SizedBox(height: 8),
-      const Text('Для промышленной эксплуатации потребуется интеграция с Windows Certificate Store и CryptoPro CSP, проверка цепочки доверия, срока действия и статуса отзыва сертификата, а также разграничение доступа к операциям.', style: TextStyle(fontSize: 11, height: 1.45, color: Color(0xFF68798B))),
+      Text('Для промышленной эксплуатации потребуется интеграция с Windows Certificate Store и CryptoPro CSP, проверка цепочки доверия, срока действия и статуса отзыва сертификата, а также разграничение доступа к операциям.', style: TextStyle(fontSize: 11, height: 1.45, color: Color(0xFF68798B))),
     ]),
   ));
 
