@@ -213,7 +213,7 @@ class _CertificatesPageState extends State<CertificatesPage> {
           const Divider(height: 26),
           _DetailRow('Тип сертификата', c.type),
           _DetailRow('Должность / назначение', c.position),
-          _DetailRow('Медицинская организация', c.organization),
+          _DetailRow('Медицинская организация', 'ГБУЗ «Городская поликлиника № 12»'),
           _DetailRow('Удостоверяющий центр', c.issuer),
           _DetailRow('Серийный номер', c.serial),
           _DetailRow('Отпечаток сертификата (демо)', c.thumbprint),
