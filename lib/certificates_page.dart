@@ -16,6 +16,25 @@ class _CertificatesPageState extends State<CertificatesPage> {
   String _status = 'Все статусы';
   String _type = 'Все типы';
   DateTime _checkedAt = DateTime.now();
+  List<String> _columnOrder = ['owner', 'type', 'issuer', 'validTo', 'remaining', 'state', 'registration'];
+  final Map<String, double> _columnWidths = {
+    'owner': 220,
+    'type': 190,
+    'issuer': 220,
+    'validTo': 145,
+    'remaining': 155,
+    'state': 150,
+    'registration': 170,
+  };
+  static const Map<String, String> _columnLabels = {
+    'owner': 'Владелец',
+    'type': 'Тип сертификата',
+    'issuer': 'Удостоверяющий центр',
+    'validTo': 'Действителен до',
+    'remaining': 'Осталось',
+    'state': 'Статус',
+    'registration': 'Регистрация',
+  };
 
   @override
   void initState() {
@@ -154,27 +173,7 @@ class _CertificatesPageState extends State<CertificatesPage> {
             Text('Измените запрос или параметры фильтрации', style: TextStyle(fontSize: 11, color: Color(0xFF7B8998))),
           ])))
         else
-          SingleChildScrollView(scrollDirection: Axis.horizontal, child: DataTable(
-            showCheckboxColumn: false, columnSpacing: 24, headingRowHeight: 48, dataRowMinHeight: 58, dataRowMaxHeight: 68,
-            columns: const [
-              DataColumn(label: Text('Владелец')), DataColumn(label: Text('Тип')),
-              DataColumn(label: Text('Удостоверяющий центр')), DataColumn(label: Text('Действителен до')),
-              DataColumn(label: Text('Осталось')), DataColumn(label: Text('Статус')),
-              DataColumn(label: Text('Регистрация')),
-            ],
-            rows: rows.map((c) => DataRow(onSelectChanged: (_) => _showDetails(c), cells: [
-              DataCell(SizedBox(width: 190, child: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Text(c.owner, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
-                Text(c.position, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 10, color: Color(0xFF7B8998))),
-              ]))),
-              DataCell(Text(c.type, style: const TextStyle(fontSize: 10))),
-              DataCell(SizedBox(width: 170, child: Text(c.issuer, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 10)))),
-              DataCell(Text(_date(c.to), style: const TextStyle(fontSize: 10))),
-              DataCell(Text(_remaining(c.daysLeft), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: _remainingColor(c)))),
-              DataCell(_StateBadge(c.state)),
-              DataCell(_RegistrationBadge(c.registered)),
-            ])).toList(),
-          )),
+          _certificateTable(rows),
         const SizedBox(height: 8),
         Row(children: [
           const Icon(Icons.touch_app_outlined, size: 14, color: Color(0xFF8190A0)),
@@ -184,6 +183,157 @@ class _CertificatesPageState extends State<CertificatesPage> {
         ]),
       ]),
     ));
+  }
+
+  double get _tableWidth =>
+      _columnOrder.fold(0.0, (total, key) => total + (_columnWidths[key] ?? 160));
+
+  Widget _certificateTable(List<_Certificate> rows) => SingleChildScrollView(
+    scrollDirection: Axis.horizontal,
+    child: SizedBox(
+      width: _tableWidth,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            height: 50,
+            child: ReorderableListView(
+              scrollDirection: Axis.horizontal,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              buildDefaultDragHandles: false,
+              onReorder: (oldIndex, newIndex) {
+                if (newIndex > oldIndex) newIndex--;
+                setState(() {
+                  final key = _columnOrder.removeAt(oldIndex);
+                  _columnOrder.insert(newIndex, key);
+                });
+              },
+              children: [
+                for (var index = 0; index < _columnOrder.length; index++)
+                  SizedBox(
+                    key: ValueKey(_columnOrder[index]),
+                    width: _columnWidths[_columnOrder[index]],
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        ReorderableDragStartListener(
+                          index: index,
+                          child: Tooltip(
+                            message: 'Перетащите, чтобы изменить порядок колонки',
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(10, 12, 16, 10),
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  _columnLabels[_columnOrder[index]]!.toUpperCase(),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF52677D),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          right: 0,
+                          top: 5,
+                          bottom: 5,
+                          child: MouseRegion(
+                            cursor: SystemMouseCursors.resizeColumn,
+                            child: GestureDetector(
+                              behavior: HitTestBehavior.translucent,
+                              onHorizontalDragUpdate: (details) {
+                                setState(() {
+                                  final key = _columnOrder[index];
+                                  _columnWidths[key] = ((_columnWidths[key] ?? 160) +
+                                          details.delta.dx)
+                                      .clamp(100.0, 420.0)
+                                      .toDouble();
+                                });
+                              },
+                              child: const SizedBox(
+                                width: 10,
+                                child: Center(
+                                  child: VerticalDivider(
+                                    width: 1,
+                                    thickness: 1,
+                                    color: Color(0xFFB8C5D1),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          const Divider(height: 1),
+          for (final certificate in rows)
+            InkWell(
+              onTap: () => _showDetails(certificate),
+              child: SizedBox(
+                height: 62,
+                child: Row(
+                  children: [
+                    for (final key in _columnOrder)
+                      SizedBox(
+                        width: _columnWidths[key],
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child: _certificateCell(key, certificate),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    ),
+  );
+
+  Widget _certificateCell(String key, _Certificate certificate) {
+    switch (key) {
+      case 'owner':
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(certificate.owner, maxLines: 1, overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700)),
+            Text(certificate.position, maxLines: 1, overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 10, color: Color(0xFF7B8998))),
+          ],
+        );
+      case 'type':
+        return Text(certificate.type, maxLines: 2, overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 10));
+      case 'issuer':
+        return Text(certificate.issuer, maxLines: 2, overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontSize: 10));
+      case 'validTo':
+        return Text(_date(certificate.to), style: const TextStyle(fontSize: 10));
+      case 'remaining':
+        return Text(_remaining(certificate.daysLeft),
+          style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: _remainingColor(certificate)));
+      case 'state':
+        return _StateBadge(certificate.state);
+      case 'registration':
+        return _RegistrationBadge(certificate.registered);
+      default:
+        return const SizedBox.shrink();
+    }
   }
 
   Widget _securityInfo() => Card(child: Padding(
