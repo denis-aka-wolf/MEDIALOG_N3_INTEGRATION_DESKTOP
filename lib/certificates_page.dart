@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Демонстрационный реестр сертификатов. Windows Certificate Store и
 /// криптопровайдеры не опрашиваются, закрытые ключи не читаются.
@@ -16,7 +16,7 @@ class _CertificatesPageState extends State<CertificatesPage> {
   String _status = 'Все статусы';
   String _type = 'Все типы';
   DateTime _checkedAt = DateTime.now();
-  List<String> _columnOrder = ['owner', 'type', 'issuer', 'validTo', 'remaining', 'state', 'registration'];
+  final List<String> _columnOrder = ['owner', 'type', 'issuer', 'validTo', 'remaining', 'state', 'registration'];
   final Map<String, double> _columnWidths = {
     'owner': 220,
     'type': 190,
@@ -202,8 +202,7 @@ class _CertificatesPageState extends State<CertificatesPage> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               buildDefaultDragHandles: false,
-              onReorder: (oldIndex, newIndex) {
-                if (newIndex > oldIndex) newIndex--;
+              onReorderItem: (oldIndex, newIndex) {
                 setState(() {
                   final key = _columnOrder.removeAt(oldIndex);
                   _columnOrder.insert(newIndex, key);
@@ -336,8 +335,8 @@ class _CertificatesPageState extends State<CertificatesPage> {
     }
   }
 
-  Widget _securityInfo() => Card(child: Padding(
-    padding: const EdgeInsets.all(18),
+  Widget _securityInfo() => const Card(child: Padding(
+    padding: EdgeInsets.all(18),
     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       const Row(children: [Icon(Icons.security_outlined, size: 19, color: Color(0xFF477AA5)), SizedBox(width: 8), Text('Контроль безопасности', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800))]),
       const SizedBox(height: 12),
@@ -368,7 +367,7 @@ class _CertificatesPageState extends State<CertificatesPage> {
           const Divider(height: 26),
           _DetailRow('Тип сертификата', c.type),
           _DetailRow('Должность / назначение', c.position),
-          _DetailRow('Медицинская организация', 'ГБУЗ «Городская поликлиника № 12»'),
+          const _DetailRow('Медицинская организация', 'ГБУЗ «Городская поликлиника № 12»'),
           _DetailRow('Удостоверяющий центр', c.issuer),
           _DetailRow('Серийный номер', c.serial),
           _DetailRow('Отпечаток сертификата (демо)', c.thumbprint),
